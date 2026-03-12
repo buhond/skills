@@ -21,10 +21,11 @@ Treat routine use as a silent background check. Do not announce that you are usi
 5. Update the narrowest existing skill that owns the rule. Prefer updating an existing skill over creating a new one.
 6. Search the target skill for the same idea, including paraphrases and nearby rules.
 7. If the idea already exists, do not duplicate it. Tighten the existing rule only when the new feedback adds missing scope, rationale, or priority.
-8. When a new rule subsumes older examples, remove or compress the examples instead of keeping both.
-9. If the same rule is missed again, increase its score instead of adding another bullet.
-10. Keep the edit minimal. Prefer one changed bullet over new sections, long explanations, copied examples, repeated examples, or checklists of symptoms.
-11. If no durable lesson exists, make no skill edit and do not mention the check.
+8. Create a new skill only as a last resort: only when the lesson is durable and no existing skill or section can contain it cleanly.
+9. When a new rule subsumes older examples, remove or compress the examples instead of keeping both.
+10. If the same rule is missed again, increase its score instead of adding another bullet.
+11. Keep the edit minimal. Prefer one changed bullet over new sections, long explanations, copied examples, repeated examples, or checklists of symptoms.
+12. If no durable lesson exists, make no skill edit and do not mention the check.
 
 ## Score rules
 
@@ -45,6 +46,7 @@ Treat routine use as a silent background check. Do not announce that you are usi
 - Keep skill text concise and imperative.
 - Avoid historical commentary, changelogs, and case-specific prose.
 - Prefer strengthening an existing rule over adding a sibling rule that says the same thing differently.
+- Prefer a new section inside an existing skill over creating a new skill.
 - Prefer general rules over examples; add at most one generic example only when the rule would otherwise be ambiguous.
 - When a rule and an example say the same thing, keep the rule and delete the example.
 - Do not multiply examples for the same rule; replace them with one generic example or none.
