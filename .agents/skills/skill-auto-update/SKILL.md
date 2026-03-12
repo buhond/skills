@@ -10,6 +10,7 @@ Use this skill to keep project skills aligned with what feedback keeps teaching.
 ## Activation
 
 This skill is most effective when the workspace `AGENTS.md` tells the AI to use it on every turn. Add a short rule such as: `Use $skill-auto-update on every turn to distill durable feedback into the narrowest existing skill.`
+Treat routine use as a silent background check. Do not announce that you are using this skill unless it produces a user-relevant skill edit or the user explicitly asks about it.
 
 ## Run this loop
 
