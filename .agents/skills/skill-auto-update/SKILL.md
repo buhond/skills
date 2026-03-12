@@ -1,9 +1,9 @@
 ---
-name: skill-feedback-loop
-description: Distill reusable lessons from user comments, review comments, corrections, and other feedback into the most relevant existing project skill. Use on every turn, and especially when feedback reveals a durable rule, a repeated violation, or a better abstraction that should be captured as a principle instead of left as a literal example.
+name: skill-auto-update
+description: Keep Codex skills aligned with durable feedback by distilling comments, corrections, and repeated guidance into the narrowest existing skill. Use on every turn, and especially when feedback reveals a reusable rule, a repeated miss, or a better abstraction that should replace a task-specific example.
 ---
 
-# Skill Feedback Loop
+# Skill Auto Update
 
 Use this skill to keep project skills aligned with what feedback keeps teaching.
 
