@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Code Review'
+  short_description: 'Perfectionist clean-code review with score gate'
+  default_prompt: 'Use $code-review to review this diff with a strict metric score, pass/fail verdict, and minimal root-cause fix plan focused on removing unnecessary abstractions.'
