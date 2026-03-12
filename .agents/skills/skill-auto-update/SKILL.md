@@ -1,6 +1,6 @@
 ---
 name: skill-auto-update
-description: Keep Codex skills aligned with durable feedback by distilling comments, corrections, and repeated guidance into the narrowest existing skill. Use on every turn, and especially when feedback reveals a reusable rule, a repeated miss, or a better abstraction that should replace a task-specific example.
+description: Keep agent skills aligned with durable feedback by distilling comments, corrections, and repeated guidance into the narrowest existing skill. Use on every turn, and especially when feedback reveals a reusable rule, a repeated miss, or a better abstraction that should replace a task-specific example.
 ---
 
 # Skill Auto Update
