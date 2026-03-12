@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Feedback Loop"
+  short_description: "Turn feedback into durable skill updates"
+  default_prompt: "Use $skill-feedback-loop to distill reusable lessons from feedback, update the right skill, avoid duplicates, and strengthen repeated rules."
