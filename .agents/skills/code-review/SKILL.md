@@ -1,152 +1,112 @@
 ---
 name: code-review
-description: 'Run a strict clean-code review with a numeric score and pass/fail gate. Use when a user asks for a code review, wants Uncle Bob-style feedback, or wants unnecessary abstractions removed with SOLID/KISS discipline.'
+description: 'Spin up a dedicated reviewer agent to run a strict quality review with a numeric score and pass/fail gate. Use when a user asks for a review, code review, feedback on code quality, or wants unnecessary abstractions removed.'
 ---
 
 # Code Review
 
-Use this skill to review code changes with a perfectionist clean-code lens and a hard quality gate.
+> *"Simplicity is the ultimate sophistication."* — Leonardo da Vinci
+
+Two roles: a **reviewer** (always a fresh subagent) judges the code, and the **implementing agent** (you) applies fixes.
 
 ## When To Use
 
-- User asks for a code review.
-- User asks for an Uncle Bob-style review.
-- User asks to simplify code and remove unnecessary abstraction.
+- User asks for a review or code review.
+- User asks for feedback on code quality or design.
+- User asks to simplify code or remove unnecessary abstraction.
 - User asks for a scored quality gate before merge.
 
-## Reviewer Persona
+## Workflow
 
-- Highly intelligent and exacting in technical judgment.
-- Perfectionist about code quality, but only in ways that materially improve the code.
-- Biased toward the least code, fewest moving parts, and simplest design that correctly delivers the behavior.
-- Calibrated to the user's code-smell standard: allergic to needless abstraction, indirection, cleverness, and speculative generality.
-- Skeptical of AI-produced code by default; assume there is likely a simpler or more coherent design until proven otherwise.
-- Comfortable identifying what is wrong before knowing the perfect rewrite; use precise criticism to point toward the right fix.
-- Ruthlessly removes accidental complexity.
-- Prefers deletion over addition when behavior can stay correct.
-- Treats abstractions as debt unless they pay for themselves now.
-- Applies SOLID only when it reduces coupling and cognitive load.
+1. **Spawn a dedicated reviewer subagent.** Use `runSubagent`, `spawn_agent`, or whatever the platform provides (Claude, Codex, Copilot, etc.). The reviewer starts from fresh context, isolated from the implementation. Use `fork_context: false` unless missing context would invalidate the review. If delegation is unavailable, tell the user — do not silently self-review.
+2. Give the reviewer only the changed files and the minimum context to understand them.
+3. The reviewer scores against the rubric, applies the review rules, and returns the quality score block.
+4. Surface the reviewer's result verbatim before acting on it — the user must see reviewer findings separately from fixer actions.
+5. If the verdict is `fail`, the implementing agent treats `minimal_fix_plan` as a mandate and applies fixes with craft and care. Then resubmit to the reviewer.
+6. After two failed cycles, stop and surface the unresolved choice clearly instead of iterating blindly.
+7. Stop when the review passes or the user interrupts.
 
-## Required Output Format
+## Quality Score
 
-Return exactly:
+The reviewer returns:
 
 ```text
 score: X/100
 verdict: pass|fail
 metrics:
-- simplicity: X/30
-- abstraction_quality: X/30
-- solid_design: X/15
-- readability: X/20
-- tests: X/5
+  simplicity: X/30
+  abstraction_quality: X/30
+  solid_design: X/15
+  readability: X/25
 findings:
-- [P0|P1|P2|P3] /abs/path/file.ts:line - concrete issue and why it matters
+  - [P0|P1|P2|P3] file:line — issue and why it matters
 minimal_fix_plan:
-- smallest change 1
-- smallest change 2
+  - fix 1
+  - fix 2
 ```
 
-If there are no findings:
+No findings → `findings: - none`, `minimal_fix_plan: - none`.
 
-- `findings:` must be `- none`
-- `minimal_fix_plan:` must be `- none`
-
-When a P0 or P1 architectural finding exists, append:
+For P0/P1 architectural findings, append:
 
 ```text
 decision_memo:
-- current_design: ...
-- root_flaw: ...
-- smallest_better_structure: ...
-- why_now: ...
+  current_design: ...
+  root_flaw: ...
+  smallest_better_structure: ...
+  why_now: ...
 ```
 
-## Scoring Rubric (0-100)
+### Scoring
 
-Score each category, then compute weighted total.
+| Category | Weight |
+|---|---|
+| Simplicity and minimal code | 30 |
+| Abstraction necessity and cohesion | 30 |
+| SOLID and dependency direction | 15 |
+| Readability and naming clarity | 25 |
 
-- Simplicity and minimal code: 30
-- Abstraction necessity and cohesion: 30
-- SOLID and dependency direction: 15
-- Readability and naming clarity: 20
-- Test adequacy for changed behavior: 5
+`pass` requires score ≥ 90 with no automatic fail triggered.
 
-Pass threshold:
+### Severity
 
-- `pass` only when score is `>= 90` and no automatic fail condition is triggered.
-
-## Automatic Fail Conditions
-
-- New abstraction added without present need.
-- More code, layers, or state introduced than the feature currently requires.
-- Duplicate logic left in place when consolidation is straightforward.
-- Symptom-level patch that leaves core design smell untouched.
-- Control flow/state management made more complex than necessary.
-- Tests do not cover changed behavior or obvious regression paths.
-- Review does not identify and explain the main design tradeoff behind the change.
-
-## Severity Guide
-
-- `P0`: incorrect architecture or behavior with serious regression risk.
-- `P1`: root-cause design flaw that should block merge.
+- `P0`: incorrect architecture or behavior with regression risk.
+- `P1`: design flaw that should block merge.
 - `P2`: meaningful maintainability or clarity issue.
-- `P3`: minor issue that does not materially threaten the design.
+- `P3`: minor issue that does not threaten the design.
 
-## Workflow
+### Automatic Fail
 
-1. Start a dedicated reviewer agent with fresh context whenever the tooling allows it. Do not reuse the current thread context for the review unless delegation is unavailable.
-2. Give the reviewer only the minimum code and task context needed to review the current changes.
-3. Review only changed files and behavior impacted by them.
-4. Identify root-cause design issues before style-level issues.
-5. Treat a change as non-trivial when it touches multiple modules, introduces or reshapes a boundary, adds a shared abstraction, changes state ownership, or changes dependency direction.
-6. For non-trivial changes, review architecture before implementation details: check boundary ownership, dependency direction, and whether behavior lives in the right layer.
-7. Flag unnecessary indirection, duplicate logic, unstable boundaries, and misplaced behavior.
-8. When a P0 or P1 architectural issue exists, include a short decision memo that states the current design, the root flaw, the smallest better structure, and why it is better now.
-9. Score against rubric and decide `pass` or `fail`.
-10. Surface the reviewer agent's result clearly as a distinct handoff before taking follow-up action.
-11. If the verdict is `fail`, the original agent should immediately implement the smallest root-cause fixes needed to pass, run the smallest relevant tests or checks for the changed behavior, then rerun the review loop.
-12. After two failed review-and-fix cycles, stop the loop and surface the unresolved architectural choice clearly instead of iterating blindly.
-13. Stop only when the review passes or the user interrupts.
+Any of these forces `fail` regardless of score:
 
-## Delegation Rules
-
-- Prefer `spawn_agent` for the review so the reviewer starts from a fresh context and is less biased by the implementation path.
-- Use `fork_context: false` for the reviewer unless the missing context would make the review invalid.
-- Keep the reviewer isolated from the fix implementation. The reviewer reviews; the original agent fixes.
-- If delegation is unavailable, perform the review locally and state that the fresh-agent path was not possible.
-- Keep the reviewer output visible verbatim or near-verbatim in the parent-agent flow so the user can clearly distinguish reviewer findings from fixer actions.
-
-## Scope Rules
-
-- Review only the current diff and behavior directly affected by it.
-- Do not invent future abstractions or hypothetical requirements.
-- Do not demand unrelated cleanup to raise the score.
-- Prefer identifying one root cause over listing multiple symptoms of the same flaw.
+- Abstraction added without present need.
+- More code, layers, or state than the feature requires.
+- Duplicate logic left when consolidation is straightforward.
+- Symptom-level patch that leaves the root design smell intact.
+- Tests do not cover changed behavior.
+- Review does not explain the central design tradeoff.
 
 ## Review Rules
 
-- Prefer concrete file/line findings over general advice.
-- Prefer architectural and behavioral risks over style nits.
-- Review as if matching the user's instincts about code smell, not a generic style guide.
-- Default to suspicion when code feels AI-shaped, over-abstracted, or prematurely generalized.
-- Penalize abstractions that do not remove real, present duplication or coupling.
-- Penalize solutions that solve the problem by adding machinery instead of removing confusion.
-- Do not reward cleverness; reward clarity and low maintenance cost.
-- It is acceptable to state the flaw clearly even if the exact final implementation is not obvious yet; the finding must still explain the direction of the fix.
-- Do not suggest large refactors when a smaller root-cause fix is enough.
-- Keep fix plan minimal and directly tied to findings.
-- On a failing review, treat `minimal_fix_plan` as the implementation queue for the original agent, not as optional advice.
-- For architectural work, define `minimal` as the smallest change that restores correct ownership, boundary placement, and dependency direction, not merely the smallest diff.
-- Do not give a high score to a review that fails to explain the central design tradeoff in the change.
+These govern the reviewer's judgment. Each principle stated once.
 
-## Architectural Review Rules
+**Scope**: review only the current diff and behavior it affects. Do not invent future requirements or demand unrelated cleanup. Prefer one root cause over multiple symptoms of the same flaw. A change is non-trivial when it touches multiple modules, reshapes a boundary, adds a shared abstraction, changes state ownership, or changes dependency direction — review architecture before implementation details for these.
 
-- Treat added complexity as guilty until it proves a present need.
-- Prefer policies and business rules to depend on details, never the reverse.
-- Keep behavior in the layer that owns the decision; do not push feature policy into shared helpers or generic infrastructure.
-- Reject abstractions that mix orchestration with low-level mechanics or hide a simple flow behind extra wrappers.
-- Reject duplicated state across layers unless one copy is a deliberate read-model boundary.
-- Prefer one clear source of truth for each decision, dependency, and state transition.
-- Favor explicit boundaries and cohesive modules over speculative reuse.
-- Prefer the smallest coherent implementation that can work today, then extend only when a real second use or boundary appears.
+**Priorities**: architectural and behavioral risks over style. Concrete file/line findings over general advice. Root-cause issues before surface-level ones.
+
+**Simplicity**: treat added complexity as guilty until proven necessary. Penalize abstractions that don't remove real, present duplication or coupling. Prefer deletion over addition when behavior stays correct. Reward clarity and low maintenance cost, not cleverness. Apply SOLID only when it reduces coupling and cognitive load, not as ceremony.
+
+**Architecture**: behavior belongs in the layer that owns the decision. Details depend on policies, never the reverse. Reject abstractions that mix orchestration with mechanics. One source of truth per decision, dependency, and state transition. Prefer the smallest coherent implementation that works today.
+
+**Fix plan**: minimal and tied directly to findings. For architectural work, "minimal" means the smallest change that restores correct ownership and dependency direction — not the smallest diff. It is fine to state a flaw without knowing the perfect rewrite, but the finding must point toward the fix direction.
+
+**Calibration**: review as if matching the user's instincts about code smell, not a generic style guide. Default to suspicion when code feels AI-shaped or prematurely generalized.
+
+## Implementing Agent Standards
+
+When the review fails, the implementing agent applies fixes with:
+
+- **Craft**: every change leaves the codebase better than found.
+- **Creativity**: make the problem dissolve, don't just address symptoms.
+- **Quality**: no shortcuts — the fix reads as if written on a senior engineer's best day.
+- **Ownership**: internalize the reviewer's bar. Treat findings as your own standards.
