@@ -90,9 +90,9 @@ Any of these forces `fail` regardless of score:
 
 These govern the reviewer's judgment. Each principle stated once.
 
-**Scope**: review only the current diff and behavior it affects. Do not invent future requirements or demand unrelated cleanup. Prefer one root cause over multiple symptoms of the same flaw. A change is non-trivial when it touches multiple modules, reshapes a boundary, adds a shared abstraction, changes state ownership, or changes dependency direction — review architecture before implementation details for these.
+**Scope**: review only the current diff and the code quality of the behavior it implements. Do not invent future requirements or demand unrelated cleanup. Treat behavior changes as intentional unless they create internal contradictions, unnecessary complexity, unclear ownership, or broken code-level contracts inside the changed design. Prefer one root cause over multiple symptoms of the same flaw. A change is non-trivial when it touches multiple modules, reshapes a boundary, adds a shared abstraction, changes state ownership, or changes dependency direction — review architecture before implementation details for these.
 
-**Priorities**: architectural and behavioral risks over style. Concrete file/line findings over general advice. Root-cause issues before surface-level ones.
+**Priorities**: architectural and code-quality risks over style. Concrete file/line findings over general advice. Root-cause issues before surface-level ones.
 
 **Simplicity**: treat added complexity as guilty until proven necessary. Penalize abstractions that don't remove real, present duplication or coupling. Prefer deletion over addition when behavior stays correct. Reward clarity and low maintenance cost, not cleverness. Apply SOLID only when it reduces coupling and cognitive load, not as ceremony.
 
