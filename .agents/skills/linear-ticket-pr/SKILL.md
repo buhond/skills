@@ -1,64 +1,50 @@
 ---
 name: linear-ticket-pr
-description: Create a Linear issue for the current local change set, place it under the best matching active project, then create the corresponding branch and draft PR named from the Linear issue key. Use when the user wants to turn work that is not on `origin/main` into a tracked Linear ticket plus a GitHub-ready branch and PR, especially when the title should start with the issue key such as `GENG-1234 - Fix something`.
+description: Turn local work into one or more small PRs by splitting coherent chunks, creating a branch for each chunk, creating a Linear issue when Linear is available, and titling the PR from the ticket key such as `GENG-1234 - Fix something`.
 ---
 
 # Linear Ticket PR
 
-## Overview
-
-Turn the current local diff into one coherent unit of work with a Linear issue, an issue-keyed branch, and a draft PR. Derive the scope from changes that are not on `origin/main`, prefer the correct active Linear project when there is a clear fit, and keep the same issue key in the branch, commit, and PR title.
+Keep the flow small and direct. This skill handles the whole local diff by turning it into the smallest coherent PRs it can infer on its own.
 
 ## Workflow
 
-1. Define the scope from local work that is not on `origin/main`.
-   - Run `git status --short --branch`.
-   - Run `git diff --stat origin/main...HEAD` to capture committed work not on `origin/main`.
-   - Run `git diff --stat HEAD` to capture tracked staged and unstaged worktree changes.
-   - Run `git ls-files --others --exclude-standard` to capture untracked files.
-   - Treat the union of those changes as the candidate scope.
-   - Stop and ask the user to split the work if the diff contains more than one unrelated concern.
-   - Stop if there is no work beyond `origin/main`.
+1. Define coherent chunks.
+   - Inspect everything not on `origin/main`, including committed work, staged changes, unstaged changes, and untracked files.
+   - Stop immediately if there is no change beyond `origin/main`.
+   - Split mixed work into the smallest coherent chunks that can each ship as one reviewable PR.
+   - Group files by the behavior they change, not by git state.
+   - Process one chunk at a time until the full local diff is published.
 
-2. Infer the owning Linear team and project.
-   - Determine the subsystem or initiative from the touched paths and the diff summary.
-   - Use Linear to read teams and active projects before creating anything.
-   - Prefer the active project whose name, description, or scope clearly matches the work.
-   - If multiple projects fit equally well, ask the user instead of guessing.
-   - If there is no clear project, create the issue under the correct team without forcing a project.
+2. Create the branch for that chunk.
+   - Start from the branch that already contains the chunk, or create a new branch if still on a default branch.
+   - Use one short descriptive branch name and keep it stable.
 
-3. Create the Linear issue.
-   - Write a concise user-facing title that describes the behavior change, not the implementation detail.
-   - Write a description with:
-     - root cause or motivation
-     - intended fix
-     - touched areas
-     - validation plan
-   - Capture the created issue key exactly as returned, for example `GENG-1234`.
+3. Create the Linear ticket if Linear is accessible.
+   - Infer the owning team from the touched paths and the diff summary.
+   - If Linear tools are available and the team can be inferred, create one issue for the chunk.
+   - Keep the ticket simple: one sentence title, short motivation, short validation plan.
+   - Do not force project selection.
+   - Capture the returned issue key exactly, for example `GENG-1234`.
+   - If Linear is unavailable or the team cannot be inferred confidently, continue without inventing a ticket key.
 
-4. Create or normalize the branch name from the issue key.
-   - If the current branch is a default branch such as `main` or `master`, create a new branch.
-   - Use `dim/<lowercased-issue-key>-<short-slug>`, for example `dim/geng-1234-fix-field-configuration-select`.
-   - If already on a feature branch, rename it to that pattern when safe.
-   - Keep the slug short, specific, and free of filler words.
-
-5. Publish with the same issue key.
-   - Stage only the files that belong to the issue.
-   - Commit with `<ISSUE_KEY> - <title>`.
-   - Push the branch.
-   - Open a draft PR with title `<ISSUE_KEY> - <title>`.
-   - Reference the Linear issue in the PR body and summarize root cause, fix, and validation.
-   - Prefer the GitHub connector for PR creation and fall back to `gh` only when necessary.
+4. Publish the chunk.
+   - Stage only the files that belong to the chunk.
+   - Commit with a title that matches the future PR title.
+   - Push the branch and open one draft PR for the chunk.
+   - If an issue key exists, prefix the PR title with it, for example `GENG-1234 - Fix field configuration select`.
+   - Otherwise use the plain title.
 
 ## Guardrails
 
-- Do not create a ticket, branch, or PR for mixed unrelated changes.
-- Do not guess a Linear project when the best match is ambiguous.
-- Do not use a lowercase issue key in the commit or PR title; keep the canonical uppercase key from Linear.
-- Do not create duplicate artifacts when a branch or PR already exists for the same issue key; update the existing artifact instead.
-- Do not widen the scope to include files that are already on `origin/main` or unrelated local edits.
+- Do not leave unrelated changes in the same PR when they can be separated cleanly.
+- Do not split files mechanically; split by behavior.
+- Do not force a Linear project or fabricate a ticket key.
+- Do not push or open the PR before the chunk is staged and committed.
+- Do not rename the branch after creating it.
+- Do not create duplicate branches, tickets, or PRs for the same chunk.
 
 ## Example Requests
 
-- `Use $linear-ticket-pr to create the right Linear ticket for my current local changes, then create the branch and draft PR.`
-- `Use $linear-ticket-pr to turn everything not on origin/main into a GENG ticket and a PR titled from that ticket.`
+- `Use $linear-ticket-pr to split my local changes into small PRs, create the right branches, create Linear tickets when possible, and open the PRs.`
+- `Use $linear-ticket-pr to turn everything not on origin/main into the smallest reviewable PRs and prefix each PR title with the Linear key when one exists.`
