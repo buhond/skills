@@ -1,0 +1,3 @@
+interface:
+  display_name: "Cook me"
+  short_description: "Interview the user about a plan or design"

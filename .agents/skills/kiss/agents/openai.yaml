@@ -1,0 +1,3 @@
+interface:
+  display_name: "Kiss"
+  short_description: "Apply KISS — write only what the task requires, remove what isn't needed, and reject every abstraction that isn't already earned."
