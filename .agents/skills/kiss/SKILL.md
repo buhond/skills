@@ -1,6 +1,11 @@
 ---
 name: kiss
-description: Apply KISS — write only what the task requires, remove what isn't needed, and reject every abstraction that isn't already earned.
+description: Apply KISS — write simple, readable code with the minimum lines needed.
 ---
 
-Write only the code the task requires. When in doubt about adding something — an abstraction, a helper, an extra parameter — leave it out. If something can be removed without breaking behavior, remove it. Obvious beats clever; flat beats layered. Extract only when the code already repeats, never in anticipation of future repetition. Every added line is a liability; it must be justified by immediate necessity, not possibility.
+Write the minimum amount of code needed for the task. Code should be easy for a human to read at a glance.
+
+- If you're unsure whether to add something — a helper, an abstraction, an extra parameter — don't add it.
+- If something can be removed without breaking behavior, remove it.
+- Only pull code into a function or variable when it already repeats in the current code, never to prepare for future reuse.
+- Don't be clever. A simple, obvious solution is always better than a smart one.
