@@ -1,0 +1,4 @@
+interface:
+  display_name: 'To Issues'
+  short_description: 'Break a plan, spec, or PRD into tracer-bullet vertical-slice issues written to <FEATURE>_ISSUES.md.'
+  default_prompt: 'Use $to-issues to break this plan into vertical-slice issues in a <FEATURE>_ISSUES.md.'

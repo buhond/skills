@@ -1,4 +1,4 @@
 interface:
   display_name: 'To PRD'
-  short_description: 'Turn the current conversation into a PRD written to PRD.md — no interview, just synthesis.'
-  default_prompt: 'Use $to-prd to synthesize this conversation into a PRD.md at the repo root.'
+  short_description: 'Turn the current conversation into a PRD written to <FEATURE>_PRD.md — no interview, just synthesis.'
+  default_prompt: 'Use $to-prd to synthesize this conversation into a <FEATURE>_PRD.md at the repo root.'

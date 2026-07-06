@@ -1,6 +1,6 @@
 ---
 name: to-prd
-description: Turn the current conversation into a PRD written to PRD.md — no interview, just synthesis of what has already been discussed.
+description: Turn the current conversation into a PRD written to <FEATURE>_PRD.md — no interview, just synthesis of what has already been discussed.
 disable-model-invocation: true
 ---
 
@@ -10,7 +10,7 @@ Turn the current conversation and codebase understanding into a PRD. Do NOT inte
 
 1. Explore the repo to understand the current state of the codebase, if you haven't already. Use the project's existing vocabulary and conventions throughout the PRD.
 
-2. Write the PRD to `PRD.md` at the repository root using the template below. If a `PRD.md` already exists, overwrite it (git has the history) and mention in your reply that you replaced it.
+2. Write the PRD to `<FEATURE>_PRD.md` at the repository root using the template below, where `<FEATURE>` is a short UPPER_SNAKE_CASE name for the feature (e.g. `USER_SELECT_PRD.md`). If that file already exists, overwrite it (git has the history) and mention in your reply that you replaced it.
 
 Publishing the PRD anywhere else (issue tracker, docs, etc.) is out of scope for this skill.
 
