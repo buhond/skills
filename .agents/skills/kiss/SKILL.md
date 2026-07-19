@@ -1,11 +1,11 @@
 ---
 name: kiss
-description: Apply KISS — write simple, readable code with the minimum lines needed.
+description: Apply KISS — produce simple, readable output (code, docs, configs, anything) with the minimum needed.
 ---
 
-Write the minimum amount of code needed for the task. Code should be easy for a human to read at a glance.
+Produce the minimum needed for the task — code, documentation, configuration, plans, or prose. The result should be easy for a human to read at a glance.
 
-- If you're unsure whether to add something — a helper, an abstraction, an extra parameter — don't add it.
-- If something can be removed without breaking behavior, remove it.
-- Only pull code into a function or variable when it already repeats in the current code, never to prepare for future reuse.
+- If you're unsure whether to add something — a helper, an abstraction, an extra parameter, an extra section — don't add it.
+- If something can be removed without breaking behavior or losing meaning, remove it.
+- Only factor something out (a function, a variable, a shared doc section) when it already repeats, never to prepare for future reuse.
 - Don't be clever. A simple, obvious solution is always better than a smart one.
