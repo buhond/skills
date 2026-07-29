@@ -1,6 +1,6 @@
 ---
 name: skill-auto-update
-description: Keep agent skills aligned with durable feedback by distilling comments, corrections, and repeated guidance into the narrowest existing skill. Use on every turn, and especially when feedback reveals a reusable rule, a repeated miss, or a better abstraction that should replace a task-specific example.
+description: Distill durable feedback into the narrowest existing skill. Use when the user corrects a convention, repeats guidance, or a review comment reveals a reusable rule that should outlive this session. Not a routine every-turn check.
 ---
 
 # Skill Auto Update
@@ -9,8 +9,9 @@ Use this skill to keep project skills aligned with what feedback keeps teaching.
 
 ## Activation
 
-This skill is most effective when the workspace `AGENTS.md` tells the AI to use it on every turn. Add a short rule such as: `Use $skill-auto-update on every turn to distill durable feedback into the narrowest existing skill.`
-Treat routine use as a silent background check. Do not announce that you are using this skill unless it produces a user-relevant skill edit or the user explicitly asks about it.
+Run this when a turn contains durable feedback: a correction, a repeated instruction, or a review comment that implies a reusable rule. Do not run it as a routine check on every turn.
+
+Treat it as a silent background pass. Do not announce that you are using this skill unless it produces a user-relevant skill edit or the user explicitly asks about it.
 
 ## Run this loop
 
