@@ -9,3 +9,13 @@ Produce the minimum needed for the task — code, documentation, configuration, 
 - If something can be removed without breaking behavior or losing meaning, remove it.
 - Only factor something out (a function, a variable, a shared doc section) when it already repeats, never to prepare for future reuse.
 - Don't be clever. A simple, obvious solution is always better than a smart one.
+- Prefer positive conditions over negative ones. Inverted logic is harder to read — avoid it.
+  ```jsx
+  // harder
+  if (!foo) return <Default />
+  return <FooComponent />
+
+  // clearer
+  if (foo) return <FooComponent />
+  return <Default />
+  ```
