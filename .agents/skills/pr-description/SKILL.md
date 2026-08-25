@@ -34,7 +34,7 @@ Write the description a reviewer actually needs: **what we did** and **why**. No
 
 - Simple words. A junior who has never seen this code should understand it.
 - Describe behavior, not the diff. The reviewer can already read the code.
-- One screen, max. If you need more, the PR is too big — split it.
+- One screen, max. Describing a big PR is still the job — summarize it, don't propose splitting it.
 - No file-by-file walkthrough, no "changes" checklist, no headings with nothing under them.
 - Drop the "Notes" section when there is nothing to say. Never pad it.
 - Never claim something is tested or verified unless you ran it.
