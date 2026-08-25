@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: 'Spin up a dedicated reviewer agent to run a strict quality review with a pass/fail gate and a minimal root-cause fix plan. Use when a user asks for a review, code review, or feedback on code quality or design.'
+description: 'Spin up a dedicated reviewer agent to run a strict quality review with a pass/fail gate and a minimal root-cause fix plan. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or for a quality gate before merge.'
 ---
 
 # Code Review
