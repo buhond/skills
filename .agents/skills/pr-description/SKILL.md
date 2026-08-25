@@ -14,21 +14,11 @@ Write the description a reviewer actually needs: **what we did** and **why**. No
 3. Write the description with the template below.
 4. If a PR already exists (`gh pr view`), update it with `gh pr edit --body-file`. Otherwise hand the text to the user.
 
-## Template
+## Sections
 
-```markdown
-## What
-
-<2-4 sentences: what this PR changes, in plain words.>
-
-## Why
-
-<1-3 sentences: the problem this solves, or the reason we want it.>
-
-## Notes for the reviewer
-
-<Optional. Only if there is a real trade-off, a risky spot, or a manual step to test.>
-```
+- `## What` — 2-4 sentences on what this PR changes.
+- `## Why` — 1-3 sentences on the problem it solves.
+- `## Notes for the reviewer` — only if there's a real trade-off, a risky spot, or a manual step to test.
 
 ## Rules
 
