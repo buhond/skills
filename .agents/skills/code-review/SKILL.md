@@ -18,22 +18,13 @@ Two roles: **reviewers** (one subagent per rule, spawned by the workflow) judge 
 3. On `fail`, apply each finding's `fix` and rerun the workflow.
 4. After two failed cycles, stop and surface the unresolved choice clearly instead of iterating blindly.
 
-One agent per rule, each judging only its own rule:
-
-| Rule | Bar |
-|---|---|
-| `kiss` | Everything removable while behavior stays identical |
-| `folder-structure` | Folder per export, kebab-case, naming, nesting, colocated tests |
-| `bad-patterns` | Duplication, dead code, swallowed errors, symptom-level patches |
-| `architecture` | Ownership, dependency direction, one source of truth |
-| `tests` | Changed behavior is covered, and tested through behavior |
-| `readability` | Names, conditions, and what a reader must hold in their head |
+One agent per rule — `kiss`, `folder-structure`, `bad-patterns`, `architecture`, `tests`, `readability` — each judging only its own rule. `review.js` holds each rule's bar; don't restate it here.
 
 Every P0/P1 finding then goes to a fresh agent that tries to refute it, so a blocking finding has survived a second reader. P2/P3 findings are reported unverified, and the workflow logs how many.
 
 ## Verdict
 
-`fail` when any P0 or P1 finding survives. Findings come back sorted by severity as `{ severity, file, line, issue, fix, rule }`.
+`fail` when any P0 or P1 finding survives, or when a rule agent returns nothing — a dead reviewer is not a pass. Findings come back sorted by severity as `{ severity, file, line, issue, fix, rule, verified }`, where `verified` says whether a refute agent actually ran.
 
 - `P0`: incorrect architecture or behavior with regression risk.
 - `P1`: design flaw that should block merge.

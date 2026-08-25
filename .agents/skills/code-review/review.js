@@ -7,8 +7,10 @@ export const meta = {
   ],
 }
 
-const base = (args && args.base) || 'origin/main'
-const skills = (args && args.skills) || '.agents/skills'
+const { base = 'origin/main', skills = '.agents/skills' } = args || {}
+
+const SEVERITIES = ['P0', 'P1', 'P2', 'P3']
+const BLOCKING = ['P0', 'P1']
 
 const SCOPE = `Review only the diff of \`git diff ${base}...HEAD\`. Judge the code quality of the
 behavior it implements — do not invent future requirements or demand unrelated cleanup.
@@ -62,7 +64,7 @@ const FINDINGS = {
         type: 'object',
         required: ['severity', 'file', 'line', 'issue', 'fix'],
         properties: {
-          severity: { enum: ['P0', 'P1', 'P2', 'P3'] },
+          severity: { enum: SEVERITIES },
           file: { type: 'string' },
           line: { type: 'number' },
           issue: { type: 'string', description: 'the defect and why it matters' },
@@ -70,11 +72,10 @@ const FINDINGS = {
         },
       },
     },
-    tradeoff: { type: 'string', description: 'the central design tradeoff in this diff' },
   },
 }
 
-const VERDICT = {
+const REFUTATION = {
   type: 'object',
   required: ['refuted', 'reason'],
   properties: {
@@ -83,44 +84,41 @@ const VERDICT = {
   },
 }
 
-const blocking = f => f.severity === 'P0' || f.severity === 'P1'
+const blocking = f => BLOCKING.includes(f.severity)
+
+const refute = f =>
+  agent(
+    `${SCOPE}\n\nTry to refute this finding: [${f.severity}] ${f.file}:${f.line} — ${f.issue}\n` +
+      `Read the code. Refute it if it misreads the diff, is already handled elsewhere, or is ` +
+      `out of scope. Default to refuted:true when uncertain.`,
+    { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: 'Verify', schema: REFUTATION }
+  ).then(v => ({ ...f, verified: Boolean(v), refuted: Boolean(v && v.refuted) }))
 
 const reviewed = await pipeline(
   RULES,
   rule => agent(`${SCOPE}\n\n${rule.prompt}`, { label: rule.key, phase: 'Review', schema: FINDINGS }),
   (result, rule) => {
-    if (!result) return { rule: rule.key, tradeoff: null, findings: [] }
+    if (!result) return { rule: rule.key, failed: true, findings: [] }
     const found = result.findings.map(f => ({ ...f, rule: rule.key }))
-    return parallel(
-      found.filter(blocking).map(f => () =>
-        agent(
-          `${SCOPE}\n\nTry to refute this finding: [${f.severity}] ${f.file}:${f.line} — ${f.issue}\n` +
-            `Read the code. Refute it if it misreads the diff, is already handled elsewhere, or is ` +
-            `out of scope. Default to refuted:true when uncertain.`,
-          { label: `verify:${rule.key}:${f.line}`, phase: 'Verify', schema: VERDICT }
-        ).then(v => ({ ...f, refuted: !v || v.refuted, why: v && v.reason }))
-      )
-    ).then(verified => ({
+    return parallel(found.filter(blocking).map(f => () => refute(f))).then(checked => ({
       rule: rule.key,
-      tradeoff: result.tradeoff,
-      findings: [...verified.filter(Boolean), ...found.filter(f => !blocking(f))],
+      failed: false,
+      findings: [...checked, ...found.filter(f => !blocking(f)).map(f => ({ ...f, verified: false }))],
     }))
   }
 )
 
 const reviews = reviewed.filter(Boolean)
+const failed = RULES.length - reviews.filter(r => !r.failed).length
 const findings = reviews.flatMap(r => r.findings).filter(f => !f.refuted)
 
-const skipped = findings.filter(f => !blocking(f)).length
-if (skipped) log(`${skipped} P2/P3 findings reported without a verify pass`)
-const missing = RULES.length - reviews.length
-if (missing) log(`${missing} of ${RULES.length} rules returned nothing`)
+const unverified = findings.filter(f => !f.verified).length
+if (unverified) log(`${unverified} P2/P3 findings reported without a verify pass`)
+if (failed) log(`${failed} of ${RULES.length} rules returned nothing — verdict forced to fail`)
 
-const order = { P0: 0, P1: 1, P2: 2, P3: 3 }
-findings.sort((a, b) => order[a.severity] - order[b.severity])
+findings.sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity))
 
 return {
-  verdict: findings.some(blocking) ? 'fail' : 'pass',
-  findings,
-  tradeoffs: reviews.filter(r => r.tradeoff).map(r => `${r.rule}: ${r.tradeoff}`),
+  verdict: failed || findings.some(blocking) ? 'fail' : 'pass',
+  findings: findings.map(({ refuted, ...f }) => f),
 }

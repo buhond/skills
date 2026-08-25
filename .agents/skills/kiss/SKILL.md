@@ -5,7 +5,7 @@ description: Apply KISS — produce simple, readable output (code, docs, configs
 
 # KISS
 
-The result should be easy for a human to read at a glance.
+Produce the minimum needed for the task — code, documentation, configuration, plans, or prose. The result should be easy for a human to read at a glance.
 
 - If you're unsure whether to add something — a helper, an abstraction, an extra parameter, an extra section — don't add it.
 - If something can be removed without breaking behavior or losing meaning, remove it.
