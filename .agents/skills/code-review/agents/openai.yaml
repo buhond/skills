@@ -1,4 +1,4 @@
 interface:
   display_name: 'Code Review'
-  short_description: 'Spawn a dedicated reviewer agent for a strict quality review with a pass/fail gate'
-  default_prompt: 'Use $code-review to review this diff with a pass/fail verdict and a minimal root-cause fix plan.'
+  short_description: 'Review a diff with one agent per rule, then verify every blocking finding'
+  default_prompt: 'Use $code-review to review this diff with one agent per rule and a pass/fail verdict.'

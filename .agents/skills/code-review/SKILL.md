@@ -1,71 +1,51 @@
 ---
 name: code-review
-description: 'Spin up a dedicated reviewer agent to run a strict quality review with a pass/fail gate and a minimal root-cause fix plan. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or for a quality gate before merge.'
+description: 'Run a workflow that reviews a diff with one agent per rule — kiss, folder structure, bad patterns, architecture, tests, readability — then verifies each blocking finding. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or for a quality gate before merge.'
 ---
 
 # Code Review
 
-Two roles: a **reviewer** (always a fresh subagent) judges the code, and the **implementing agent** (you) applies fixes.
+Two roles: **reviewers** (one subagent per rule, spawned by the workflow) judge the code, and the **implementing agent** (you) applies fixes. Reviewers only report — never let a reviewer edit code.
 
 ## Workflow
 
-1. **Spawn a fresh reviewer subagent** with no context from the implementation, so the review stays independent of the work. If delegation is unavailable, tell the user — do not silently self-review.
-2. Give the reviewer only the changed files and the minimum context to understand them.
-3. Surface the reviewer's result verbatim before acting on it — the user must see reviewer findings separately from fixer actions.
-4. On `fail`, treat `minimal_fix_plan` as a mandate and apply the fixes, then resubmit to the reviewer.
-5. After two failed cycles, stop and surface the unresolved choice clearly instead of iterating blindly.
+1. Run `review.js` from this skill's directory with the Workflow tool:
+   `Workflow({ scriptPath: "<this skill's directory>/review.js", args: { base, skills } })`
+   - `base` — the branch to diff against, default `origin/main`.
+   - `skills` — path to the skills directory, so the rule agents can read `kiss/SKILL.md` and `folder-structure/SKILL.md`. Default `.agents/skills`.
+   - If the Workflow tool is unavailable, say so and stop — do not silently self-review.
+2. Surface the returned findings verbatim before acting on them — the user must see reviewer findings separately from fixer actions.
+3. On `fail`, apply each finding's `fix` and rerun the workflow.
+4. After two failed cycles, stop and surface the unresolved choice clearly instead of iterating blindly.
+
+One agent per rule, each judging only its own rule:
+
+| Rule | Bar |
+|---|---|
+| `kiss` | Everything removable while behavior stays identical |
+| `folder-structure` | Folder per export, kebab-case, naming, nesting, colocated tests |
+| `bad-patterns` | Duplication, dead code, swallowed errors, symptom-level patches |
+| `architecture` | Ownership, dependency direction, one source of truth |
+| `tests` | Changed behavior is covered, and tested through behavior |
+| `readability` | Names, conditions, and what a reader must hold in their head |
+
+Every P0/P1 finding then goes to a fresh agent that tries to refute it, so a blocking finding has survived a second reader. P2/P3 findings are reported unverified, and the workflow logs how many.
 
 ## Verdict
 
-The reviewer returns:
-
-```text
-verdict: pass|fail
-findings:
-  - [P0|P1|P2|P3] file:line — issue and why it matters
-minimal_fix_plan:
-  - fix 1
-  - fix 2
-```
-
-No findings → `findings: - none`, `minimal_fix_plan: - none`.
-
-For P0/P1 architectural findings, append:
-
-```text
-decision_memo:
-  current_design: ...
-  root_flaw: ...
-  smallest_better_structure: ...
-  why_now: ...
-```
-
-### Severity
+`fail` when any P0 or P1 finding survives. Findings come back sorted by severity as `{ severity, file, line, issue, fix, rule }`.
 
 - `P0`: incorrect architecture or behavior with regression risk.
 - `P1`: design flaw that should block merge.
 - `P2`: meaningful maintainability or clarity issue.
 - `P3`: minor issue that does not threaten the design.
 
-### Fail
+Treat as P1 or worse: an abstraction added without present need, more code or state than the feature requires, duplicate logic left when consolidation is straightforward, a symptom-level patch over a live root cause, or changed behavior with no test.
 
-Any of these means `fail`:
+## Scope
 
-- Abstraction added without present need.
-- More code, layers, or state than the feature requires.
-- Duplicate logic left when consolidation is straightforward.
-- Symptom-level patch that leaves the root design smell intact.
-- Tests do not cover changed behavior.
-- The review does not explain the central design tradeoff.
+Review only the current diff and the code quality of the behavior it implements. Do not invent future requirements or demand unrelated cleanup. Treat behavior changes as intentional unless they create internal contradictions, unnecessary complexity, unclear ownership, or broken contracts inside the changed design. Prefer one root cause over several symptoms of the same flaw.
 
-## Review Rules
+## Fix plan
 
-These govern the reviewer's judgment. Apply the `kiss` skill as the simplicity bar. Judge in this order: simplicity, abstraction necessity, readability and naming, then SOLID and dependency direction.
-
-**Scope**: review only the current diff and the code quality of the behavior it implements. Do not invent future requirements or demand unrelated cleanup. Treat behavior changes as intentional unless they create internal contradictions, unnecessary complexity, unclear ownership, or broken code-level contracts inside the changed design. Prefer one root cause over multiple symptoms of the same flaw. A change is non-trivial when it touches multiple modules, reshapes a boundary, adds a shared abstraction, changes state ownership, or changes dependency direction — review architecture before implementation details for these.
-
-**Priorities**: architectural and code-quality risks over style. Concrete file/line findings over general advice. Root-cause issues before surface-level ones.
-
-**Architecture**: behavior belongs in the layer that owns the decision. Details depend on policies, never the reverse. Reject abstractions that mix orchestration with mechanics. One source of truth per decision, dependency, and state transition. Prefer the smallest coherent implementation that works today. Apply SOLID only where it reduces coupling and cognitive load, never as ceremony.
-
-**Fix plan**: minimal and tied directly to findings. For architectural work, "minimal" means the smallest change that restores correct ownership and dependency direction — not the smallest diff. It is fine to state a flaw without knowing the perfect rewrite, but the finding must point toward the fix direction.
+Minimal and tied directly to a finding. For architectural work, "minimal" means the smallest change that restores correct ownership and dependency direction — not the smallest diff.
