@@ -15,7 +15,17 @@ const BLOCKING = ['P0', 'P1']
 
 const SCOPE = `Review only the diff of \`git diff ${base}...HEAD\`. Judge the code quality of the
 behavior it implements — do not invent future requirements or demand unrelated cleanup.
-Report findings only; another agent applies the fixes.`
+Treat behavior changes as intentional unless they contradict the changed design.
+Prefer one root cause over several symptoms of it.
+Report findings only; another agent applies the fixes.
+
+Severity:
+P0 — incorrect architecture or behavior with regression risk.
+P1 — design flaw that should block merge. An abstraction added without present need, more code
+or state than the feature requires, duplicate logic left when consolidation is straightforward,
+a symptom-level patch over a live root cause, or changed behavior with no test are all P1 or worse.
+P2 — meaningful maintainability or clarity issue.
+P3 — minor issue that does not threaten the design.`
 
 const RULES = [
   {

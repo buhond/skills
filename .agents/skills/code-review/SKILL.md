@@ -18,24 +18,15 @@ Two roles: **reviewers** (one subagent per rule, spawned by the workflow) judge 
 3. On `fail`, apply each finding's `fix` and rerun the workflow.
 4. After two failed cycles, stop and surface the unresolved choice clearly instead of iterating blindly.
 
-Every P0/P1 finding then goes to a fresh agent that tries to refute it, and is dropped unless that second reader can confirm it — a reader who read the code and still hesitated is a refutation. A finding whose refute agent never answered is kept, not dropped, because that is no evidence rather than weak evidence. P2/P3 findings are reported unchecked, and the workflow logs how many.
+Every P0/P1 finding then goes to a fresh agent that tries to refute it, and survives only if that second reader confirms it. P2/P3 findings are reported unchecked, and the workflow logs how many.
 
 ## Verdict
 
 `fail` when any P0 or P1 finding survives, or when a rule agent returns nothing — a dead reviewer is not a pass. Findings come back sorted by severity as `{ severity, file, line, issue, fix, rule, checked }`, where `checked` says whether a refute agent answered.
 
-`score` is 100 minus 25 per surviving P0, 15 per P1, 5 per P2 and 2 per P3, floored at 0 — a summary of the findings, not a second gate. It is `null` when a rule agent died, because a partial review cannot be scored. Report it with the verdict; never trade a finding away to protect the number.
+`score` is 100 minus 25 per surviving P0, 15 per P1, 5 per P2 and 2 per P3, floored at 0 — a summary, not a second gate, and `null` when a rule died. Report it with the verdict; never trade a finding away to protect the number.
 
-- `P0`: incorrect architecture or behavior with regression risk.
-- `P1`: design flaw that should block merge.
-- `P2`: meaningful maintainability or clarity issue.
-- `P3`: minor issue that does not threaten the design.
-
-Treat as P1 or worse: an abstraction added without present need, more code or state than the feature requires, duplicate logic left when consolidation is straightforward, a symptom-level patch over a live root cause, or changed behavior with no test.
-
-## Scope
-
-Review only the current diff and the code quality of the behavior it implements. Do not invent future requirements or demand unrelated cleanup. Treat behavior changes as intentional unless they create internal contradictions, unnecessary complexity, unclear ownership, or broken contracts inside the changed design. Prefer one root cause over several symptoms of the same flaw.
+`review.js` owns the scope and the severity rubric, so the reviewers actually see them. Don't restate either here.
 
 ## Fix plan
 
