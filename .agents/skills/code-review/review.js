@@ -9,7 +9,8 @@ export const meta = {
 
 const { base = 'origin/main', skills = '.agents/skills' } = args || {}
 
-const SEVERITIES = ['P0', 'P1', 'P2', 'P3']
+const COST = { P0: 25, P1: 15, P2: 5, P3: 2 }
+const SEVERITIES = Object.keys(COST)
 const BLOCKING = ['P0', 'P1']
 
 const SCOPE = `Review only the diff of \`git diff ${base}...HEAD\`. Judge the code quality of the
@@ -121,5 +122,6 @@ findings.sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.se
 
 return {
   verdict: failed || findings.some(blocking) ? 'fail' : 'pass',
+  score: failed ? null : Math.max(0, 100 - findings.reduce((n, f) => n + COST[f.severity], 0)),
   findings: findings.map(({ refuted, ...f }) => f),
 }

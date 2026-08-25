@@ -24,6 +24,8 @@ Every P0/P1 finding then goes to a fresh agent that tries to refute it, and is d
 
 `fail` when any P0 or P1 finding survives, or when a rule agent returns nothing — a dead reviewer is not a pass. Findings come back sorted by severity as `{ severity, file, line, issue, fix, rule, checked }`, where `checked` says whether a refute agent answered.
 
+`score` is 100 minus 25 per surviving P0, 15 per P1, 5 per P2 and 2 per P3, floored at 0 — a summary of the findings, not a second gate. It is `null` when a rule agent died, because a partial review cannot be scored. Report it with the verdict; never trade a finding away to protect the number.
+
 - `P0`: incorrect architecture or behavior with regression risk.
 - `P1`: design flaw that should block merge.
 - `P2`: meaningful maintainability or clarity issue.
