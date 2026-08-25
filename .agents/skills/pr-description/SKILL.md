@@ -13,6 +13,6 @@ Three sections, 1-3 sentences each, in plain words a junior can follow:
 
 Find the why yourself — the linked issue, the conversation, `git log`. Don't ask the user; when it's still unclear, write your best reading and say it's your reading.
 
-Never claim something is tested unless you ran it.
+Only claim what you verified.
 
 Update an existing PR with `gh pr edit --body-file`.
