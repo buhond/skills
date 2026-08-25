@@ -1,6 +1,6 @@
 ---
 name: pr-description
-description: Write a short, clear PR description — what changed and why, in plain words. Use when opening a PR or asked to write or improve a PR description.
+description: Write a short, clear pull request description — what changed and why, in plain words. Use when opening a PR, or when asked to write, rewrite, or improve a PR description or body.
 ---
 
 # PR Description
