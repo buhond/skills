@@ -92,7 +92,7 @@ const refute = f =>
       `Read the code. Refute it if it misreads the diff, is already handled elsewhere, or is ` +
       `out of scope. Default to refuted:true when uncertain.`,
     { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: 'Verify', schema: REFUTATION }
-  ).then(v => ({ ...f, verified: Boolean(v), refuted: Boolean(v && v.refuted) }))
+  ).then(refutation => ({ ...f, checked: Boolean(refutation), refuted: Boolean(refutation && refutation.refuted) }))
 
 const reviewed = await pipeline(
   RULES,
@@ -100,20 +100,21 @@ const reviewed = await pipeline(
   (result, rule) => {
     if (!result) return { rule: rule.key, failed: true, findings: [] }
     const found = result.findings.map(f => ({ ...f, rule: rule.key }))
-    return parallel(found.filter(blocking).map(f => () => refute(f))).then(checked => ({
+    return parallel(found.filter(blocking).map(f => () => refute(f))).then(verified => ({
       rule: rule.key,
       failed: false,
-      findings: [...checked, ...found.filter(f => !blocking(f)).map(f => ({ ...f, verified: false }))],
+      findings: [...verified, ...found.filter(f => !blocking(f)).map(f => ({ ...f, checked: false }))],
     }))
   }
 )
 
-const reviews = reviewed.filter(Boolean)
-const failed = RULES.length - reviews.filter(r => !r.failed).length
-const findings = reviews.flatMap(r => r.findings).filter(f => !f.refuted)
+const failed = reviewed.filter(r => r.failed).length
+const findings = reviewed.flatMap(r => r.findings).filter(f => !f.refuted)
 
-const unverified = findings.filter(f => !f.verified).length
-if (unverified) log(`${unverified} P2/P3 findings reported without a verify pass`)
+const unchecked = findings.filter(f => !f.checked)
+const blocked = unchecked.filter(blocking).length
+if (blocked) log(`${blocked} blocking findings kept without a verify pass — the refute agent died`)
+if (unchecked.length - blocked) log(`${unchecked.length - blocked} P2/P3 findings reported without a verify pass`)
 if (failed) log(`${failed} of ${RULES.length} rules returned nothing — verdict forced to fail`)
 
 findings.sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity))
