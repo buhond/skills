@@ -11,7 +11,7 @@ Write the description a reviewer actually needs: **what we did** and **why**. No
 
 1. Read the change: `git diff origin/main...HEAD --stat` then the diff itself.
 2. Dig out the why yourself — the linked issue, the conversation, the commit messages, `git log` on the surrounding code. Don't ask the user.
-3. Write the description with the template below.
+3. Write the description with the sections below.
 4. If a PR already exists (`gh pr view`), update it with `gh pr edit --body-file`. Otherwise hand the text to the user.
 
 ## Sections
@@ -25,7 +25,6 @@ Write the description a reviewer actually needs: **what we did** and **why**. No
 - Simple words. A junior who has never seen this code should understand it.
 - Describe behavior, not the diff. The reviewer can already read the code.
 - One screen, max. Describing a big PR is still the job — summarize it, don't propose splitting it.
-- No file-by-file walkthrough, no "changes" checklist, no headings with nothing under them.
-- Drop the "Notes" section when there is nothing to say. Never pad it.
+- No file-by-file walkthrough, no "changes" checklist, no empty headings. Never pad a section to fill it.
 - Never claim something is tested or verified unless you ran it.
 - When the why still isn't clear after looking, write your best reading of it and say it's your reading. Don't stop to ask.
