@@ -17,15 +17,11 @@ Two roles: **reviewers** (one subagent per rule, spawned by the workflow) judge 
 3. On `fail`, apply each finding's `fix` and rerun the workflow.
 4. After two failed cycles, stop and surface the unresolved choice clearly instead of iterating blindly.
 
-Every P0/P1 finding then goes to a fresh agent that tries to refute it. It is dropped only when that second reader explicitly refutes it, and kept — unverified — when the reader answers nothing or dies. P2/P3 findings never go through this pass.
+## Result
 
-## Verdict
+`{ verdict, score, deadRules, findings }`, findings sorted by severity. Report the verdict and score as returned; never trade a finding away to protect the number. `deadRules` names the dimensions that went unreviewed — rerun those before trusting a result that lists any.
 
-`fail` when a blocking finding survives or a rule agent dies — a dead reviewer is not a pass. Findings come back sorted by severity as `{ severity, file, line, issue, fix, rule }`, plus `verified` on the blocking ones saying whether a refute agent answered.
-
-`score` summarises the surviving findings out of 100, and is `null` when a rule died. Report it with the verdict; never trade a finding away to protect the number.
-
-`review.js` owns the scope, the severity rubric, the weights and the fail condition. Don't restate any of them here.
+`review.js` owns the scope, the severity rubric, the weights, the verify policy and the fail condition. Don't restate any of them here.
 
 ## Fix plan
 
