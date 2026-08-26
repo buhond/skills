@@ -19,10 +19,6 @@ Two roles: **reviewers** (one subagent per rule, spawned by the workflow) judge 
 
 ## Result
 
-`{ verdict, score, deadRules, findings }`, findings sorted by severity. Report the verdict and score as returned; never trade a finding away to protect the number. `deadRules` names the dimensions that went unreviewed — rerun those before trusting a result that lists any.
+`{ verdict, score, unreviewedRules, findings, dropped }`, findings sorted by severity. Report the verdict and score as returned; never trade a finding away to protect the number. Rerun any rule listed in `unreviewedRules` before trusting the result. `dropped` holds the blocking findings the verify pass refuted, with its reason — read them, since an uncertain refuter drops rather than keeps.
 
-`review.js` owns the scope, the severity rubric, the weights, the verify policy and the fail condition. Don't restate any of them here.
-
-## Fix plan
-
-Minimal and tied directly to a finding. For architectural work, "minimal" means the smallest change that restores correct ownership and dependency direction — not the smallest diff.
+`review.js` owns the scope, the severity rubric, the weights, the verify policy, the fail condition and what a good fix looks like. Don't restate any of them here.

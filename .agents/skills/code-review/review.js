@@ -11,7 +11,7 @@ const { base = 'origin/main' } = args || {}
 
 const SEVERITIES = ['P0', 'P1', 'P2', 'P3']
 const COST = { P0: 25, P1: 15, P2: 5, P3: 2 }
-const BLOCKING = ['P0', 'P1']
+const BLOCKING_SEVERITIES = ['P0', 'P1']
 
 const DIFF_SCOPE = `Review only the diff of \`git diff ${base}...HEAD\`. Judge the code quality of the
 behavior it implements — do not invent future requirements or demand unrelated cleanup.
@@ -29,7 +29,7 @@ a symptom-level patch over a live root cause, or changed behavior with no test a
 P2 — meaningful maintainability or clarity issue.
 P3 — minor issue that does not threaten the design.`
 
-const applySkill = name =>
+const applySkillPrompt = name =>
   `Read the ${name} skill — \`.agents/skills/${name}/SKILL.md\` from the repo root, or locate it
 with \`find . -path '*/${name}/SKILL.md'\` — and apply it as your only bar. If you cannot find and
 read that file, return \`unavailable: true\` with no findings rather than reviewing from memory.`
@@ -37,13 +37,13 @@ read that file, return \`unavailable: true\` with no findings rather than review
 const RULES = [
   {
     key: 'kiss',
-    prompt: `${applySkill('kiss')} Find every line, branch, parameter, layer and abstraction in the diff
+    prompt: `${applySkillPrompt('kiss')} Find every line, branch, parameter, layer and abstraction in the diff
 that can be removed while behavior stays identical. For each, name what breaks if it is removed —
 if nothing breaks, it is a finding.`,
   },
   {
     key: 'folder-structure',
-    prompt: `${applySkill('folder-structure')} Check every file the diff adds, renames or moves: folder
+    prompt: `${applySkillPrompt('folder-structure')} Check every file the diff adds, renames or moves: folder
 per export, kebab-case, file name matching the export, nesting by usage, colocated tests.`,
   },
   {
@@ -89,7 +89,12 @@ const FINDINGS = {
           file: { type: 'string' },
           line: { type: 'number' },
           issue: { type: 'string', description: 'the defect and why it matters' },
-          fix: { type: 'string', description: 'smallest change that removes the cause' },
+          fix: {
+            type: 'string',
+            description:
+              'smallest change that removes the cause — for architectural findings, the smallest ' +
+              'change that restores correct ownership and dependency direction, not the smallest diff',
+          },
         },
       },
     },
@@ -105,7 +110,7 @@ const REFUTATION = {
   },
 }
 
-const blocking = f => BLOCKING.includes(f.severity)
+const blocking = f => BLOCKING_SEVERITIES.includes(f.severity)
 
 const refute = f =>
   agent(
@@ -113,43 +118,35 @@ const refute = f =>
       `Read the code. Refute it if it misreads the diff, is already handled elsewhere, or is ` +
       `out of scope. Default to refuted:true when uncertain.`,
     { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: 'Verify', schema: REFUTATION }
-  ).then(refutation => {
-    const answered = Boolean(refutation)
-    if (!answered) return { ...f, refuteAnswered: false, refuted: false }
-    return { ...f, refuteAnswered: true, refuted: refutation.refuted, reason: refutation.reason }
-  })
+  ).then(refutation => (refutation ? { ...f, refuted: refutation.refuted, reason: refutation.reason } : f))
 
 const reviewed = await pipeline(
   RULES,
   rule => agent(`${REVIEW_SCOPE}\n\n${rule.prompt}`, { label: rule.key, phase: 'Review', schema: FINDINGS }),
   (result, rule) => {
-    if (!result || result.unavailable) return { deadRule: rule.key, findings: [] }
+    if (!result || result.unavailable) return { unreviewedRule: rule.key, findings: [] }
     const found = result.findings.map(f => ({ ...f, rule: rule.key }))
-    return parallel(found.map(f => () => (blocking(f) ? refute(f) : f))).then(findings => ({
-      deadRule: null,
-      findings,
-    }))
+    return parallel(found.map(f => () => (blocking(f) ? refute(f) : f))).then(findings => ({ findings }))
   }
 )
 
-const deadRules = reviewed.filter(r => r.deadRule).map(r => r.deadRule)
-const reported = reviewed.flatMap(r => r.findings).filter(Boolean)
-const findings = reported.filter(f => !f.refuted)
+const unreviewedRules = reviewed.flatMap(r => r.unreviewedRule ?? [])
+const allFindings = reviewed.flatMap(r => r.findings)
+const kept = allFindings.filter(f => !f.refuted)
+const dropped = allFindings.filter(f => f.refuted)
+const incomplete = unreviewedRules.length > 0
 
-const dropped = reported.filter(f => f.refuted)
-if (dropped.length)
-  log(
-    `verify pass dropped ${dropped.length} blocking findings: ` +
-      dropped.map(f => `${f.file}:${f.line} — ${f.reason}`).join(' | ')
-  )
-if (deadRules.length)
-  log(`${deadRules.length} of ${RULES.length} rule agents failed to answer (${deadRules.join(', ')}) — verdict forced to fail`)
+if (dropped.length) log(`verify pass dropped ${dropped.length} blocking findings — see \`dropped\``)
+if (incomplete)
+  log(`${unreviewedRules.length} of ${RULES.length} rules went unreviewed (${unreviewedRules.join(', ')}) — verdict forced to fail`)
 
-findings.sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity))
+const bySeverity = (a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)
+kept.sort(bySeverity)
 
 return {
-  verdict: deadRules.length > 0 || findings.some(blocking) ? 'fail' : 'pass',
-  score: deadRules.length > 0 ? null : Math.max(0, 100 - findings.reduce((n, f) => n + COST[f.severity], 0)),
-  deadRules,
-  findings: findings.map(({ refuted, reason, ...f }) => f),
+  verdict: incomplete || kept.some(blocking) ? 'fail' : 'pass',
+  score: incomplete ? null : Math.max(0, 100 - kept.reduce((n, f) => n + COST[f.severity], 0)),
+  unreviewedRules,
+  findings: kept.map(({ refuted, reason, ...f }) => f),
+  dropped: dropped.map(({ refuted, ...f }) => f),
 }
