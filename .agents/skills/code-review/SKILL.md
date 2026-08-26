@@ -15,7 +15,7 @@ Two roles: **reviewers** (one subagent per rule, spawned by the workflow) judge 
    - If the Workflow tool is unavailable, say so and stop — do not silently self-review.
 2. Surface the returned findings verbatim before acting on them — the user must see reviewer findings separately from fixer actions.
 3. On `fail`, apply each finding's `fix` and rerun the workflow.
-4. After two failed cycles, stop and surface the unresolved choice clearly instead of iterating blindly.
+4. Stop and surface the unresolved choice instead of iterating blindly — after two failed cycles, or as soon as a run contradicts an earlier one: it reverses a finding you already applied, or re-raises one you declined for a reason that still holds. Contradictions mean the runs are sampling reviewer taste, not finding defects. Say so and stop.
 
 ## Result
 
