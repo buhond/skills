@@ -7,10 +7,12 @@ export const meta = {
   ],
 }
 
-const { base = 'origin/main', skills = '.agents/skills' } = args || {}
+const [REVIEW, VERIFY] = meta.phases.map(p => p.title)
 
+const { base = 'origin/main' } = args || {}
+
+const SEVERITIES = ['P0', 'P1', 'P2', 'P3']
 const COST = { P0: 25, P1: 15, P2: 5, P3: 2 }
-const SEVERITIES = Object.keys(COST)
 const BLOCKING = ['P0', 'P1']
 
 const SCOPE = `Review only the diff of \`git diff ${base}...HEAD\`. Judge the code quality of the
@@ -27,18 +29,22 @@ a symptom-level patch over a live root cause, or changed behavior with no test a
 P2 — meaningful maintainability or clarity issue.
 P3 — minor issue that does not threaten the design.`
 
+const read = name =>
+  `Read the ${name} skill — \`.agents/skills/${name}/SKILL.md\` from the repo root, or locate it
+with \`find . -path '*/${name}/SKILL.md'\` — and apply it as your only bar. If you cannot find and
+read that file, report a P0 finding saying so rather than reviewing from memory.`
+
 const RULES = [
   {
     key: 'kiss',
-    prompt: `Read ${skills}/kiss/SKILL.md and apply it as your only bar. Find every line, branch,
-parameter, layer and abstraction in the diff that can be removed while behavior stays identical.
-For each, name what breaks if it is removed — if nothing breaks, it is a finding.`,
+    prompt: `${read('kiss')} Find every line, branch, parameter, layer and abstraction in the diff
+that can be removed while behavior stays identical. For each, name what breaks if it is removed —
+if nothing breaks, it is a finding.`,
   },
   {
     key: 'folder-structure',
-    prompt: `Read ${skills}/folder-structure/SKILL.md and apply it as your only bar. Check every
-file the diff adds, renames or moves: folder per export, kebab-case, file name matching the
-export, nesting by usage, colocated tests.`,
+    prompt: `${read('folder-structure')} Check every file the diff adds, renames or moves: folder
+per export, kebab-case, file name matching the export, nesting by usage, colocated tests.`,
   },
   {
     key: 'bad-patterns',
@@ -102,36 +108,38 @@ const refute = f =>
     `${SCOPE}\n\nTry to refute this finding: [${f.severity}] ${f.file}:${f.line} — ${f.issue}\n` +
       `Read the code. Refute it if it misreads the diff, is already handled elsewhere, or is ` +
       `out of scope. Default to refuted:true when uncertain.`,
-    { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: 'Verify', schema: REFUTATION }
-  ).then(refutation => ({ ...f, checked: Boolean(refutation), refuted: Boolean(refutation && refutation.refuted) }))
+    { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: VERIFY, schema: REFUTATION }
+  ).then(refutation => {
+    const answered = Boolean(refutation)
+    return { ...f, verified: answered, refuted: answered && refutation.refuted }
+  })
 
 const reviewed = await pipeline(
   RULES,
-  rule => agent(`${SCOPE}\n\n${rule.prompt}`, { label: rule.key, phase: 'Review', schema: FINDINGS }),
+  rule => agent(`${SCOPE}\n\n${rule.prompt}`, { label: rule.key, phase: REVIEW, schema: FINDINGS }),
   (result, rule) => {
-    if (!result) return { rule: rule.key, failed: true, findings: [] }
+    if (!result) return { died: true, findings: [] }
     const found = result.findings.map(f => ({ ...f, rule: rule.key }))
-    return parallel(found.filter(blocking).map(f => () => refute(f))).then(verified => ({
-      rule: rule.key,
-      failed: false,
-      findings: [...verified, ...found.filter(f => !blocking(f)).map(f => ({ ...f, checked: false }))],
+    const toVerify = found.filter(blocking)
+    const rest = found.filter(f => !blocking(f))
+    return parallel(toVerify.map(f => () => refute(f))).then(verified => ({
+      died: false,
+      findings: [...verified, ...rest],
     }))
   }
 )
 
-const failed = reviewed.filter(r => r.failed).length
+const deadRules = reviewed.filter(r => r.died).length
 const findings = reviewed.flatMap(r => r.findings).filter(f => !f.refuted)
 
-const unchecked = findings.filter(f => !f.checked)
-const blocked = unchecked.filter(blocking).length
-if (blocked) log(`${blocked} blocking findings kept without a verify pass — the refute agent died`)
-if (unchecked.length - blocked) log(`${unchecked.length - blocked} P2/P3 findings reported without a verify pass`)
-if (failed) log(`${failed} of ${RULES.length} rules returned nothing — verdict forced to fail`)
+const unverified = findings.filter(f => blocking(f) && !f.verified).length
+if (unverified) log(`${unverified} blocking findings kept without a verify pass — the refute agent died`)
+if (deadRules) log(`${deadRules} of ${RULES.length} rules returned nothing — verdict forced to fail`)
 
 findings.sort((a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity))
 
 return {
-  verdict: failed || findings.some(blocking) ? 'fail' : 'pass',
-  score: failed ? null : Math.max(0, 100 - findings.reduce((n, f) => n + COST[f.severity], 0)),
+  verdict: deadRules || findings.some(blocking) ? 'fail' : 'pass',
+  score: deadRules ? null : Math.max(0, 100 - findings.reduce((n, f) => n + COST[f.severity], 0)),
   findings: findings.map(({ refuted, ...f }) => f),
 }

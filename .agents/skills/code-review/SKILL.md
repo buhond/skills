@@ -10,23 +10,22 @@ Two roles: **reviewers** (one subagent per rule, spawned by the workflow) judge 
 ## Workflow
 
 1. Run `review.js` from this skill's directory with the Workflow tool:
-   `Workflow({ scriptPath: "<this skill's directory>/review.js", args: { base, skills } })`
+   `Workflow({ scriptPath: "<this skill's directory>/review.js", args: { base } })`
    - `base` — the branch to diff against, default `origin/main`.
-   - `skills` — path to the skills directory, so the rule agents can read `kiss/SKILL.md` and `folder-structure/SKILL.md`. Default `.agents/skills`.
    - If the Workflow tool is unavailable, say so and stop — do not silently self-review.
 2. Surface the returned findings verbatim before acting on them — the user must see reviewer findings separately from fixer actions.
 3. On `fail`, apply each finding's `fix` and rerun the workflow.
 4. After two failed cycles, stop and surface the unresolved choice clearly instead of iterating blindly.
 
-Every P0/P1 finding then goes to a fresh agent that tries to refute it, and survives only if that second reader confirms it. P2/P3 findings are reported unchecked, and the workflow logs how many.
+Every P0/P1 finding then goes to a fresh agent that tries to refute it. It is dropped only when that second reader explicitly refutes it, and kept — unverified — when the reader answers nothing or dies. P2/P3 findings never go through this pass.
 
 ## Verdict
 
-`fail` when any P0 or P1 finding survives, or when a rule agent returns nothing — a dead reviewer is not a pass. Findings come back sorted by severity as `{ severity, file, line, issue, fix, rule, checked }`, where `checked` says whether a refute agent answered.
+`fail` when a blocking finding survives or a rule agent dies — a dead reviewer is not a pass. Findings come back sorted by severity as `{ severity, file, line, issue, fix, rule }`, plus `verified` on the blocking ones saying whether a refute agent answered.
 
-`score` is 100 minus 25 per surviving P0, 15 per P1, 5 per P2 and 2 per P3, floored at 0 — a summary, not a second gate, and `null` when a rule died. Report it with the verdict; never trade a finding away to protect the number.
+`score` summarises the surviving findings out of 100, and is `null` when a rule died. Report it with the verdict; never trade a finding away to protect the number.
 
-`review.js` owns the scope and the severity rubric, so the reviewers actually see them. Don't restate either here.
+`review.js` owns the scope, the severity rubric, the weights and the fail condition. Don't restate any of them here.
 
 ## Fix plan
 

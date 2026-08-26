@@ -35,6 +35,15 @@ user-profile
 
 **Nest by usage.** If something is only used by one parent, put it inside that parent's folder — don't leave it as a sibling or lift it to a shared location. Only promote it out once a second, unrelated parent needs it.
 
+```
+fruit-list
+├── fruit-list.tsx
+├── fruit-list.spec.tsx
+└── fruit-item
+    ├── fruit-item.tsx
+    └── fruit-item.spec.tsx
+```
+
 **File names must match the export**, in kebab-case:
 
 ```
