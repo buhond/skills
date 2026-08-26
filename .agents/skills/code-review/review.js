@@ -21,29 +21,21 @@ Prefer one root cause over several symptoms of it.`
 const REVIEW_SCOPE = `${DIFF_SCOPE}
 Report findings only; another agent applies the fixes.
 
-Severity:
-P0 — incorrect architecture or behavior with regression risk.
-P1 — design flaw that should block merge. An abstraction added without present need, more code
-or state than the feature requires, an option or parameter where composition would do, duplicate
-logic left when consolidation is straightforward, a symptom-level patch over a live root cause,
-or changed behavior with no test are all P1 or worse.
-P2 — meaningful maintainability or clarity issue that no deletion would fix.
-P3 — local and cosmetic, with no consequence for the design.
+Severity is the shape of the fix, never how the code looks:
+P0 — wrong behavior or architecture, with regression risk.
+P1 — the fix is a removal or a redesign, because the code carries something the feature does not
+need, or patches a cause that is still live.
+P2 — the fix is a rewrite in place, and no removal would do it.
+P3 — local and cosmetic.
 
-Grade a finding by its cause, not by how it looks: code that reads badly because it carries code,
-state or indirection the feature does not need is that removal's severity, not a cosmetic one.
-File each defect once, at that severity. Do not restate a finding you already filed as a second,
-smaller one about the same cause elsewhere.`
+File each defect once, at the severity of its cause.`
 
 const SIZE_BAR = `The bar before all others is line count: the fewest lines that do the job, read
 top to bottom without backtracking. Every finding whose fix is a removal names the lines it deletes.
-Prefer composing small pieces over configuring one piece with options, flags or modes. When a unit is
-long, find the shorter route before accepting it: a library, framework affordance or repo helper that
-already does the work,
-or a formulation with fewer moving parts. "There is no shorter way" is a claim to check,
-never one to assume. Control flow a reader has to simulate — state mutated at a distance from where
-it is read, a value threaded through layers that do not use it, a branch whose condition encodes a
-caller you must go find — is a design defect, not a matter of taste.`
+Prefer composing small pieces over configuring one piece with options, flags or modes. "There is no
+shorter way" is a claim to check — against a library, a repo helper, or a formulation with fewer
+moving parts — never one to assume. Control flow a reader has to simulate is a design defect, not a
+matter of taste.`
 
 const readSkill = name =>
   `Read the ${name} skill — \`.agents/skills/${name}/SKILL.md\` from the repo root, or locate it
@@ -83,7 +75,7 @@ dependency and state transition. Flag abstractions that mix orchestration with m
   {
     key: 'tests',
     prompt: `Judge whether the tests cover the behavior this diff changes. Find changed behavior
-with no test, and tests that assert implementation details instead of behavior.`,
+with no test — that is P1 — and tests that assert implementation details instead of behavior.`,
   },
   {
     key: 'readability',
@@ -168,8 +160,8 @@ const refute = f =>
       `Its fix: ${f.fix}\n` +
       `Read the code. Refute it if it misreads the diff, is already handled elsewhere, or is ` +
       `out of scope. Default to refuted:true when uncertain — but where the fix is to remove code, ` +
-      `refute it only by naming what breaks if it goes. Reading well, naming a concept or possible ` +
-      `future reuse are not breakages; if you cannot name one, keep the finding.`,
+      `refute it only by naming what breaks if it goes. Reading well, naming a concept or ` +
+      `possible future reuse are not breakages.`,
     { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: 'Verify', schema: REFUTATION }
   ).then(refutation => ({ ...f, ...(refutation ?? { unverified: true }) }))
 
@@ -202,8 +194,8 @@ const incomplete = unreviewedRules.length > 0 || unverified.length > 0
 
 if (incomplete)
   log(
-    `${unreviewedRules.length} of ${RULES.length} rules went unreviewed (${unreviewedRules.join(', ') || 'none'}) ` +
-      `and ${unverified.length} findings went unverified — verdict forced to fail`
+    `verdict forced to fail — unreviewed rules: ${unreviewedRules.join(', ') || 'none'}; ` +
+      `unverified findings: ${unverified.length}`
   )
 
 const bySeverity = (a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)
@@ -217,9 +209,8 @@ const groupByRootCause = async findings => {
   const result =
     findings.length > 1 &&
     (await agent(
-      `${DIFF_SCOPE}\n\n${RULES.length} reviewers judged this diff independently and never saw each ` +
-        `other's findings, so one defect is often reported many times — in different words, at ` +
-        `different severities, and from the files on either side of it.\n\n${listing}\n\n` +
+      `${DIFF_SCOPE}\n\n${RULES.length} reviewers judged this diff without seeing each other, so one defect ` +
+        `often appears many times over.\n\n${listing}\n\n` +
         `Group the findings that one fix would resolve together. Sharing a file, a layer or a theme ` +
         `is not sharing a cause: group them only if fixing the defect one describes would leave the ` +
         `others with nothing left to report. Give every index exactly once; a finding whose cause no ` +
