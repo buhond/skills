@@ -36,9 +36,10 @@ File each defect once, at that severity. Do not restate a finding you already fi
 smaller one about the same cause elsewhere.`
 
 const SIZE_BAR = `The bar before all others is line count: the fewest lines that do the job, read
-top to bottom without backtracking. Every finding names the lines it deletes. Prefer composing small
-pieces over configuring one piece with options, flags or modes. When a unit is long, find the shorter
-route before accepting it: a library, framework affordance or repo helper that already does the work,
+top to bottom without backtracking. Every finding whose fix is a removal names the lines it deletes.
+Prefer composing small pieces over configuring one piece with options, flags or modes. When a unit is
+long, find the shorter route before accepting it: a library, framework affordance or repo helper that
+already does the work,
 or a formulation with fewer moving parts. "There is no shorter way" is a claim to check,
 never one to assume. Control flow a reader has to simulate — state mutated at a distance from where
 it is read, a value threaded through layers that do not use it, a branch whose condition encodes a
@@ -46,8 +47,8 @@ caller you must go find — is a design defect, not a matter of taste.`
 
 const readSkill = name =>
   `Read the ${name} skill — \`.agents/skills/${name}/SKILL.md\` from the repo root, or locate it
-with \`find . -path '*/${name}/SKILL.md'\` — and apply it as your only bar. If you cannot find and
-read that file, return \`unavailable: true\` with no findings rather than reviewing from memory.`
+with \`find . -path '*/${name}/SKILL.md'\` — and apply it as the bar for this rule. If you cannot
+find and read that file, return \`unavailable: true\` with no findings rather than reviewing from memory.`
 
 const RULES = [
   {
