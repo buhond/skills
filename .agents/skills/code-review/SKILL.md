@@ -14,7 +14,7 @@ Two roles: **reviewers** (one subagent per rule, spawned by the workflow) judge 
    - `base` — the branch to diff against, default `origin/main`.
    - If the Workflow tool is unavailable, say so and stop — do not silently self-review.
 2. Surface the returned findings verbatim before acting on them — the user must see reviewer findings separately from fixer actions.
-3. On `fail`, apply each finding's `fix` and rerun the workflow.
+3. Apply each finding's `fix` whatever the verdict — `pass` means nothing blocks merge, not that nothing is left to fix. Rerun the workflow only on `fail`.
 4. Stop and surface the unresolved choice instead of iterating blindly — after two failed cycles, or as soon as a run contradicts an earlier one: it reverses a finding you already applied, or re-raises one you declined for a reason that still holds. Contradictions mean the runs are sampling reviewer taste, not finding defects. Say so and stop.
 
 ## Result

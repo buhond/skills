@@ -164,8 +164,11 @@ const blocking = f => f.severity === 'P0' || f.severity === 'P1'
 const refute = f =>
   agent(
     `${DIFF_SCOPE}\n\nTry to refute this finding: [${f.severity}] ${f.file}:${f.line} — ${f.issue}\n` +
+      `Its fix: ${f.fix}\n` +
       `Read the code. Refute it if it misreads the diff, is already handled elsewhere, or is ` +
-      `out of scope. Default to refuted:true when uncertain.`,
+      `out of scope. Default to refuted:true when uncertain — but where the fix is to remove code, ` +
+      `refute it only by naming what breaks if it goes. Reading well, naming a concept or possible ` +
+      `future reuse are not breakages; if you cannot name one, keep the finding.`,
     { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: 'Verify', schema: REFUTATION }
   ).then(refutation => ({ ...f, ...(refutation ?? { unverified: true }) }))
 
