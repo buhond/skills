@@ -4,6 +4,7 @@ export const meta = {
   phases: [
     { title: 'Review', detail: 'one agent per rule' },
     { title: 'Verify', detail: 'refute each blocking finding' },
+    { title: 'Cluster', detail: 'group findings that share a root cause' },
   ],
 }
 
@@ -20,13 +21,27 @@ Prefer one root cause over several symptoms of it.`
 const REVIEW_SCOPE = `${DIFF_SCOPE}
 Report findings only; another agent applies the fixes.
 
+The bar is the least code that does the job, read top to bottom without backtracking. Prefer
+composing small pieces over configuring one piece with options, flags or modes. Control flow a
+reader has to simulate — state mutated at a distance from where it is read, a value threaded
+through layers that do not use it, a branch whose condition encodes a caller you must go find —
+is a design defect, not a matter of taste.
+
+Grade a finding by its cause, not by how it looks. If awkward-reading code is awkward because it
+carries code, state or indirection the feature does not need, it is that removal's severity, not
+a cosmetic one. Say what the fix deletes.
+
 Severity:
 P0 — incorrect architecture or behavior with regression risk.
 P1 — design flaw that should block merge. An abstraction added without present need, more code
-or state than the feature requires, duplicate logic left when consolidation is straightforward,
-a symptom-level patch over a live root cause, or changed behavior with no test are all P1 or worse.
-P2 — meaningful maintainability or clarity issue.
-P3 — minor issue that does not threaten the design.`
+or state than the feature requires, an option or parameter where composition would do, duplicate
+logic left when consolidation is straightforward, a symptom-level patch over a live root cause,
+or changed behavior with no test are all P1 or worse.
+P2 — meaningful maintainability or clarity issue that no deletion would fix.
+P3 — local and cosmetic, with no consequence for the design.
+
+File each defect once, at its true severity. Do not restate a finding you already filed as a
+second, smaller one about the same cause elsewhere.`
 
 const readSkill = name =>
   `Read the ${name} skill — \`.agents/skills/${name}/SKILL.md\` from the repo root, or locate it
@@ -39,7 +54,8 @@ const RULES = [
     skill: 'kiss',
     prompt: `Find every line, branch, parameter, layer and abstraction in the diff
 that can be removed while behavior stays identical. For each, name what breaks if it is removed —
-if nothing breaks, it is a finding.`,
+if nothing breaks, it is a finding. Count an option, flag or mode added to an existing unit as
+removable whenever composing a separate small unit would serve the same caller.`,
   },
   {
     key: 'folder-structure',
@@ -68,7 +84,9 @@ with no test, and tests that assert implementation details instead of behavior.`
     key: 'readability',
     prompt: `Judge readability and naming: names that do not say what the thing is, inverted or
 nested conditions that could read positively, comments that restate the code, and anything a
-reader has to hold in their head to follow.`,
+reader has to hold in their head to follow. Trace each changed unit top to bottom once: every
+jump backwards, or out to another file, to learn what a value holds is a finding. Where the cause
+is code or state the feature does not need, report the deletion rather than the awkwardness.`,
   },
 ]
 
@@ -109,6 +127,31 @@ const REFUTATION = {
   properties: {
     refuted: { type: 'boolean' },
     reason: { type: 'string' },
+  },
+}
+
+const CLUSTERS = {
+  type: 'object',
+  required: ['clusters'],
+  properties: {
+    clusters: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['rootCause', 'findings'],
+        properties: {
+          rootCause: {
+            type: 'string',
+            description: 'the one defect every finding in this group describes',
+          },
+          findings: {
+            type: 'array',
+            items: { type: 'number' },
+            description: 'indexes from the numbered list',
+          },
+        },
+      },
+    },
   },
 }
 
@@ -156,10 +199,53 @@ if (incomplete)
 const bySeverity = (a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)
 kept.sort(bySeverity)
 
+const singletons = findings => findings.map((_, i) => ({ findings: [i] }))
+
+const groupByRootCause = async findings => {
+  if (findings.length < 2) return singletons(findings)
+
+  const listing = findings
+    .map((f, i) => `${i}. [${f.severity}] ${f.rule} — ${f.file}:${f.line ?? '?'} — ${f.issue}`)
+    .join('\n')
+
+  const result = await agent(
+    `${DIFF_SCOPE}\n\n${RULES.length} reviewers judged this diff independently and never saw each ` +
+      `other's findings, so one defect is often reported many times — in different words, at ` +
+      `different severities, and from the files on either side of it.\n\n${listing}\n\n` +
+      `Group the findings that one fix would resolve together. Sharing a file, a layer or a theme ` +
+      `is not sharing a cause: group them only if fixing the defect one describes would leave the ` +
+      `others with nothing left to report. Give every index exactly once; a finding whose cause no ` +
+      `other finding shares is a group of one.`,
+    { label: 'cluster', phase: 'Cluster', schema: CLUSTERS }
+  )
+  if (!result) return singletons(findings)
+
+  const seen = new Set()
+  const groups = result.clusters.flatMap(cluster => {
+    const members = cluster.findings.filter(i => Number.isInteger(i) && findings[i] && !seen.has(i))
+    members.forEach(i => seen.add(i))
+    return members.length ? [{ ...cluster, findings: members }] : []
+  })
+  return [...groups, ...findings.flatMap((_, i) => (seen.has(i) ? [] : [{ findings: [i] }]))]
+}
+
+const groups = (await groupByRootCause(kept))
+  .map(({ rootCause, findings }) => {
+    const [primary, ...corroborating] = findings.map(i => kept[i]).sort(bySeverity)
+    return {
+      ...primary,
+      ...(corroborating.length && {
+        rootCause,
+        corroboratedBy: corroborating.map(f => `${f.rule} — ${f.file}:${f.line ?? '?'}`),
+      }),
+    }
+  })
+  .sort(bySeverity)
+
 return {
   verdict: incomplete || kept.some(blocking) ? 'fail' : 'pass',
-  score: incomplete ? null : Math.max(0, 100 - kept.reduce((n, f) => n + SCORE_PENALTY[f.severity], 0)),
+  score: incomplete ? null : Math.max(0, 100 - groups.reduce((n, f) => n + SCORE_PENALTY[f.severity], 0)),
   unreviewedRules,
-  findings: kept.map(({ refuted, reason, ...f }) => f),
+  findings: groups.map(({ refuted, reason, ...f }) => f),
   dropped: dropped.map(({ refuted, ...f }) => f),
 }
