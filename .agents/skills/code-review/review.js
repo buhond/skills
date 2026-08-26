@@ -169,15 +169,12 @@ const refute = f =>
     { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: 'Verify', schema: REFUTATION }
   ).then(refutation => ({ ...f, ...(refutation ?? { unverified: true }) }))
 
-const reviewPrompt = rule =>
-  [REVIEW_SCOPE, rule.sizeBar && SIZE_BAR, rule.skill && readSkill(rule.skill), rule.prompt]
-    .filter(Boolean)
-    .join('\n\n')
-
 const ruleResults = await pipeline(
   RULES,
   rule =>
-    agent(reviewPrompt(rule), {
+    agent([REVIEW_SCOPE, rule.sizeBar && SIZE_BAR, rule.skill && readSkill(rule.skill), rule.prompt]
+      .filter(Boolean)
+      .join('\n\n'), {
       label: rule.key,
       phase: 'Review',
       schema: findingsSchema(rule),
