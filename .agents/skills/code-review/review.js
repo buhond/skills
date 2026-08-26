@@ -7,8 +7,6 @@ export const meta = {
   ],
 }
 
-const [REVIEW, VERIFY] = meta.phases.map(p => p.title)
-
 const { base = 'origin/main' } = args || {}
 
 const SEVERITIES = ['P0', 'P1', 'P2', 'P3']
@@ -108,7 +106,7 @@ const refute = f =>
     `${SCOPE}\n\nTry to refute this finding: [${f.severity}] ${f.file}:${f.line} — ${f.issue}\n` +
       `Read the code. Refute it if it misreads the diff, is already handled elsewhere, or is ` +
       `out of scope. Default to refuted:true when uncertain.`,
-    { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: VERIFY, schema: REFUTATION }
+    { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: 'Verify', schema: REFUTATION }
   ).then(refutation => {
     const answered = Boolean(refutation)
     return { ...f, verified: answered, refuted: answered && refutation.refuted }
@@ -116,7 +114,7 @@ const refute = f =>
 
 const reviewed = await pipeline(
   RULES,
-  rule => agent(`${SCOPE}\n\n${rule.prompt}`, { label: rule.key, phase: REVIEW, schema: FINDINGS }),
+  rule => agent(`${SCOPE}\n\n${rule.prompt}`, { label: rule.key, phase: 'Review', schema: FINDINGS }),
   (result, rule) => {
     if (!result) return { died: true, findings: [] }
     const found = result.findings.map(f => ({ ...f, rule: rule.key }))
