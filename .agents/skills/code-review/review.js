@@ -21,15 +21,19 @@ Prefer one root cause over several symptoms of it.`
 const REVIEW_SCOPE = `${DIFF_SCOPE}
 Report findings only; another agent applies the fixes.
 
-The bar is the least code that does the job, read top to bottom without backtracking. Prefer
-composing small pieces over configuring one piece with options, flags or modes. Control flow a
-reader has to simulate — state mutated at a distance from where it is read, a value threaded
+The bar before all others is line count: the fewest lines that do the job, read top to bottom
+without backtracking. Every line the feature does not need is a finding, and every finding names
+the lines it deletes. Prefer composing small pieces over configuring one piece with options, flags
+or modes. When a unit is long, find the shorter route before accepting it: a library, framework
+affordance or repo helper that already does the work, or a formulation with fewer moving parts.
+"There is no shorter way" is a claim to check, never one to assume. Control flow a reader has to
+simulate — state mutated at a distance from where it is read, a value threaded
 through layers that do not use it, a branch whose condition encodes a caller you must go find —
 is a design defect, not a matter of taste.
 
 Grade a finding by its cause, not by how it looks. If awkward-reading code is awkward because it
 carries code, state or indirection the feature does not need, it is that removal's severity, not
-a cosmetic one. Say what the fix deletes.
+a cosmetic one.
 
 Severity:
 P0 — incorrect architecture or behavior with regression risk.
@@ -199,47 +203,41 @@ if (incomplete)
 const bySeverity = (a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)
 kept.sort(bySeverity)
 
-const singletons = findings => findings.map((_, i) => ({ findings: [i] }))
+const label = f => `${f.rule} — ${f.file}:${f.line ?? '?'}`
 
 const groupByRootCause = async findings => {
-  if (findings.length < 2) return singletons(findings)
+  const listing = findings.map((f, i) => `${i}. [${f.severity}] ${label(f)} — ${f.issue}`).join('\n')
 
-  const listing = findings
-    .map((f, i) => `${i}. [${f.severity}] ${f.rule} — ${f.file}:${f.line ?? '?'} — ${f.issue}`)
-    .join('\n')
-
-  const result = await agent(
-    `${DIFF_SCOPE}\n\n${RULES.length} reviewers judged this diff independently and never saw each ` +
-      `other's findings, so one defect is often reported many times — in different words, at ` +
-      `different severities, and from the files on either side of it.\n\n${listing}\n\n` +
-      `Group the findings that one fix would resolve together. Sharing a file, a layer or a theme ` +
-      `is not sharing a cause: group them only if fixing the defect one describes would leave the ` +
-      `others with nothing left to report. Give every index exactly once; a finding whose cause no ` +
-      `other finding shares is a group of one.`,
-    { label: 'cluster', phase: 'Cluster', schema: CLUSTERS }
-  )
-  if (!result) return singletons(findings)
+  const result =
+    findings.length > 1 &&
+    (await agent(
+      `${DIFF_SCOPE}\n\n${RULES.length} reviewers judged this diff independently and never saw each ` +
+        `other's findings, so one defect is often reported many times — in different words, at ` +
+        `different severities, and from the files on either side of it.\n\n${listing}\n\n` +
+        `Group the findings that one fix would resolve together. Sharing a file, a layer or a theme ` +
+        `is not sharing a cause: group them only if fixing the defect one describes would leave the ` +
+        `others with nothing left to report. Give every index exactly once; a finding whose cause no ` +
+        `other finding shares is a group of one.`,
+      { label: 'cluster', phase: 'Cluster', schema: CLUSTERS }
+    ))
 
   const seen = new Set()
-  const groups = result.clusters.flatMap(cluster => {
-    const members = cluster.findings.filter(i => Number.isInteger(i) && findings[i] && !seen.has(i))
+  const groups = []
+  for (const cluster of result ? result.clusters : []) {
+    const members = cluster.findings.filter(i => findings[i] && !seen.has(i))
     members.forEach(i => seen.add(i))
-    return members.length ? [{ ...cluster, findings: members }] : []
-  })
-  return [...groups, ...findings.flatMap((_, i) => (seen.has(i) ? [] : [{ findings: [i] }]))]
+    if (members.length) groups.push(members)
+  }
+  findings.forEach((_, i) => seen.has(i) || groups.push([i]))
+  return groups
 }
 
 const groups = (await groupByRootCause(kept))
-  .map(({ rootCause, findings }) => {
-    const [primary, ...corroborating] = findings.map(i => kept[i]).sort(bySeverity)
-    return {
-      ...primary,
-      ...(corroborating.length && {
-        rootCause,
-        corroboratedBy: corroborating.map(f => `${f.rule} — ${f.file}:${f.line ?? '?'}`),
-      }),
-    }
-  })
+  .map(indexes => indexes.map(i => kept[i]).sort(bySeverity))
+  .map(([primary, ...corroborating]) => ({
+    ...primary,
+    ...(corroborating.length && { corroboratedBy: corroborating.map(label) }),
+  }))
   .sort(bySeverity)
 
 return {
