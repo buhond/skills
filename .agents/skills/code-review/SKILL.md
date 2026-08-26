@@ -5,7 +5,7 @@ description: 'Run a workflow that reviews a diff with one agent per rule — kis
 
 # Code Review
 
-Two roles: **reviewers** (one subagent per rule, spawned by the workflow) judge the code, and the **implementing agent** (you) applies fixes. Reviewers only report — never let a reviewer edit code.
+Two roles: **reviewers** (one subagent per rule, spawned by the workflow) judge the code, and the **implementing agent** (you) applies fixes.
 
 ## Workflow
 
@@ -19,6 +19,11 @@ Two roles: **reviewers** (one subagent per rule, spawned by the workflow) judge 
 
 ## Result
 
-`{ verdict, score, unreviewedRules, findings, dropped }`, findings sorted by severity. Report the verdict and score as returned; never trade a finding away to protect the number. Rerun any rule listed in `unreviewedRules` before trusting the result. `dropped` holds the blocking findings the verify pass refuted, with its reason — read them, since an uncertain refuter drops rather than keeps.
+`{ verdict, score, unreviewedRules, findings, dropped }`.
+
+- `verdict` / `score` — report as returned; never trade a finding away to protect the number.
+- `unreviewedRules` — rules whose agent died or could not read its skill file. Rerun them before trusting the result.
+- `findings` — kept findings sorted by severity, each tagged with the `rule` that raised it. A finding marked `unverified` had its verify agent die.
+- `dropped` — blocking findings the verify pass refuted, with its `reason`. Read them: an uncertain refuter drops rather than keeps.
 
 `review.js` owns the scope, the severity rubric, the weights, the verify policy, the fail condition and what a good fix looks like. Don't restate any of them here.

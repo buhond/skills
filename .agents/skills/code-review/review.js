@@ -10,8 +10,7 @@ export const meta = {
 const { base = 'origin/main' } = args || {}
 
 const SEVERITIES = ['P0', 'P1', 'P2', 'P3']
-const COST = { P0: 25, P1: 15, P2: 5, P3: 2 }
-const BLOCKING_SEVERITIES = ['P0', 'P1']
+const SCORE_PENALTY = { P0: 25, P1: 15, P2: 5, P3: 2 }
 
 const DIFF_SCOPE = `Review only the diff of \`git diff ${base}...HEAD\`. Judge the code quality of the
 behavior it implements — do not invent future requirements or demand unrelated cleanup.
@@ -29,21 +28,23 @@ a symptom-level patch over a live root cause, or changed behavior with no test a
 P2 — meaningful maintainability or clarity issue.
 P3 — minor issue that does not threaten the design.`
 
-const applySkillPrompt = name =>
+const readSkill = name =>
   `Read the ${name} skill — \`.agents/skills/${name}/SKILL.md\` from the repo root, or locate it
 with \`find . -path '*/${name}/SKILL.md'\` — and apply it as your only bar. If you cannot find and
-read that file, return \`unavailable: true\` with no findings rather than reviewing from memory.`
+read that file, return \`unavailable: true\` with no findings rather than reviewing from memory.\n`
 
 const RULES = [
   {
     key: 'kiss',
-    prompt: `${applySkillPrompt('kiss')} Find every line, branch, parameter, layer and abstraction in the diff
+    skill: 'kiss',
+    prompt: `Find every line, branch, parameter, layer and abstraction in the diff
 that can be removed while behavior stays identical. For each, name what breaks if it is removed —
 if nothing breaks, it is a finding.`,
   },
   {
     key: 'folder-structure',
-    prompt: `${applySkillPrompt('folder-structure')} Check every file the diff adds, renames or moves: folder
+    skill: 'folder-structure',
+    prompt: `Check every file the diff adds, renames or moves: folder
 per export, kebab-case, file name matching the export, nesting by usage, colocated tests.`,
   },
   {
@@ -71,35 +72,36 @@ reader has to hold in their head to follow.`,
   },
 ]
 
-const FINDINGS = {
+const FINDING = {
   type: 'object',
-  required: ['findings'],
+  required: ['severity', 'file', 'issue', 'fix'],
   properties: {
-    unavailable: {
-      type: 'boolean',
-      description: 'the skill this rule reviews against could not be read — do not review from memory',
-    },
-    findings: {
-      type: 'array',
-      items: {
-        type: 'object',
-        required: ['severity', 'file', 'line', 'issue', 'fix'],
-        properties: {
-          severity: { type: 'string', enum: SEVERITIES },
-          file: { type: 'string' },
-          line: { type: 'number' },
-          issue: { type: 'string', description: 'the defect and why it matters' },
-          fix: {
-            type: 'string',
-            description:
-              'smallest change that removes the cause — for architectural findings, the smallest ' +
-              'change that restores correct ownership and dependency direction, not the smallest diff',
-          },
-        },
-      },
+    severity: { type: 'string', enum: SEVERITIES },
+    file: { type: 'string' },
+    line: { type: 'number' },
+    issue: { type: 'string', description: 'the defect and why it matters' },
+    fix: {
+      type: 'string',
+      description:
+        'smallest change that removes the cause — for architectural findings, the smallest ' +
+        'change that restores correct ownership and dependency direction, not the smallest diff',
     },
   },
 }
+
+const findingsSchema = rule => ({
+  type: 'object',
+  required: ['findings'],
+  properties: {
+    findings: { type: 'array', items: FINDING },
+    ...(rule.skill && {
+      unavailable: {
+        type: 'boolean',
+        description: `the ${rule.skill} skill could not be read — do not review from memory`,
+      },
+    }),
+  },
+})
 
 const REFUTATION = {
   type: 'object',
@@ -110,7 +112,7 @@ const REFUTATION = {
   },
 }
 
-const blocking = f => BLOCKING_SEVERITIES.includes(f.severity)
+const blocking = f => f.severity === 'P0' || f.severity === 'P1'
 
 const refute = f =>
   agent(
@@ -118,34 +120,45 @@ const refute = f =>
       `Read the code. Refute it if it misreads the diff, is already handled elsewhere, or is ` +
       `out of scope. Default to refuted:true when uncertain.`,
     { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: 'Verify', schema: REFUTATION }
-  ).then(refutation => (refutation ? { ...f, refuted: refutation.refuted, reason: refutation.reason } : f))
+  ).then(refutation => ({ ...f, ...(refutation ?? { unverified: true }) }))
 
-const reviewed = await pipeline(
+const ruleResults = await pipeline(
   RULES,
-  rule => agent(`${REVIEW_SCOPE}\n\n${rule.prompt}`, { label: rule.key, phase: 'Review', schema: FINDINGS }),
+  rule =>
+    agent(`${REVIEW_SCOPE}\n\n${rule.skill ? readSkill(rule.skill) : ''}${rule.prompt}`, {
+      label: rule.key,
+      phase: 'Review',
+      schema: findingsSchema(rule),
+    }),
   (result, rule) => {
-    if (!result || result.unavailable) return { unreviewedRule: rule.key, findings: [] }
-    const found = result.findings.map(f => ({ ...f, rule: rule.key }))
-    return parallel(found.map(f => () => (blocking(f) ? refute(f) : f))).then(findings => ({ findings }))
+    if (!result || result.unavailable) return { rule: rule.key, reviewed: false, findings: [] }
+    const verified = result.findings.map(f => () => {
+      const found = { ...f, rule: rule.key }
+      return blocking(found) ? refute(found) : found
+    })
+    return parallel(verified).then(findings => ({ rule: rule.key, reviewed: true, findings }))
   }
 )
 
-const unreviewedRules = reviewed.flatMap(r => r.unreviewedRule ?? [])
-const allFindings = reviewed.flatMap(r => r.findings)
+const unreviewedRules = ruleResults.filter(r => !r.reviewed).map(r => r.rule)
+const allFindings = ruleResults.flatMap(r => r.findings)
 const kept = allFindings.filter(f => !f.refuted)
 const dropped = allFindings.filter(f => f.refuted)
-const incomplete = unreviewedRules.length > 0
+const unverified = kept.filter(f => f.unverified)
+const incomplete = unreviewedRules.length > 0 || unverified.length > 0
 
-if (dropped.length) log(`verify pass dropped ${dropped.length} blocking findings — see \`dropped\``)
 if (incomplete)
-  log(`${unreviewedRules.length} of ${RULES.length} rules went unreviewed (${unreviewedRules.join(', ')}) — verdict forced to fail`)
+  log(
+    `${unreviewedRules.length} of ${RULES.length} rules went unreviewed (${unreviewedRules.join(', ') || 'none'}) ` +
+      `and ${unverified.length} findings went unverified — verdict forced to fail`
+  )
 
 const bySeverity = (a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)
 kept.sort(bySeverity)
 
 return {
   verdict: incomplete || kept.some(blocking) ? 'fail' : 'pass',
-  score: incomplete ? null : Math.max(0, 100 - kept.reduce((n, f) => n + COST[f.severity], 0)),
+  score: incomplete ? null : Math.max(0, 100 - kept.reduce((n, f) => n + SCORE_PENALTY[f.severity], 0)),
   unreviewedRules,
   findings: kept.map(({ refuted, reason, ...f }) => f),
   dropped: dropped.map(({ refuted, ...f }) => f),
