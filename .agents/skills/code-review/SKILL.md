@@ -16,9 +16,9 @@ Reviewers — one subagent per rule, spawned by the workflow — judge the code.
 
 ## Result
 
-`{ verdict, score, unreviewedRules, findings, dropped }`
+`{ verdict, unreviewedRules, findings, dropped }`
 
-- `verdict` / `score` — report as returned; never trade a finding away to protect the number.
+- `verdict` — report as returned; never talk a finding down to reach `pass`.
 - `unreviewedRules` — their agent died or could not read its skill file. Rerun them before trusting the result.
 - `findings` — one per root cause, worst first, tagged with its `rule`; duplicates raised by other rules sit under `corroboratedBy`. `unverified` means its verify agent died.
 - `dropped` — blocking findings the verify pass refuted, with its `reason`. Read them.

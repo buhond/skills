@@ -11,7 +11,6 @@ export const meta = {
 const { base = 'origin/main' } = args || {}
 
 const SEVERITIES = ['P0', 'P1', 'P2', 'P3']
-const SCORE_PENALTY = { P0: 25, P1: 15, P2: 5, P3: 2 }
 
 const DIFF_SCOPE = `Review only the diff of \`git diff ${base}...HEAD\`. Judge the code quality of the
 behavior it implements — do not invent future requirements or demand unrelated cleanup.
@@ -199,7 +198,6 @@ if (incomplete)
   )
 
 const bySeverity = (a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)
-kept.sort(bySeverity)
 
 const label = f => `${f.rule} — ${f.file}:${f.line ?? '?'}`
 
@@ -239,7 +237,6 @@ const groups = (await groupByRootCause(kept))
 
 return {
   verdict: incomplete || kept.some(blocking) ? 'fail' : 'pass',
-  score: incomplete ? null : Math.max(0, 100 - groups.reduce((n, f) => n + SCORE_PENALTY[f.severity], 0)),
   unreviewedRules,
   findings: groups.map(({ refuted, reason, ...f }) => f),
   dropped: dropped.map(({ refuted, ...f }) => f),
