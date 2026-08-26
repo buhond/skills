@@ -1,6 +1,6 @@
 ---
 name: folder-structure
-description: Enforce this repo's folder and file structure conventions for front-end code — one exported component/hook/utility per kebab-case folder with a same-named main file, nesting children that are only used by their parent, and colocated tests. Use whenever creating new front-end files or components, organizing or reorganizing a feature folder, reviewing a front-end PR for structure, or when a user asks to audit, clean up, restructure, or fix the folder layout of any part of the front end — even if they don't name this skill directly.
+description: Enforce this repo's front-end folder and file structure conventions. Use when creating or moving front-end files or components, organizing a feature folder, reviewing a front-end PR for structure, or when a user asks to audit, clean up, restructure, or fix a folder layout — even if they don't name this skill.
 ---
 
 # Folder Structure

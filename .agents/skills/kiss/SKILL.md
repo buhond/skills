@@ -3,6 +3,8 @@ name: kiss
 description: Apply KISS — produce simple, readable output (code, docs, configs, anything) with the minimum needed.
 ---
 
+# KISS
+
 Produce the minimum needed for the task — code, documentation, configuration, plans, or prose. The result should be easy for a human to read at a glance.
 
 - If you're unsure whether to add something — a helper, an abstraction, an extra parameter, an extra section — don't add it.
