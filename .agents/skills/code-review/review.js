@@ -31,7 +31,7 @@ P3 — local and cosmetic.
 File each defect once, at the severity of its cause.`
 
 const SIZE_BAR = `The bar before all others is line count: the fewest lines that do the job, read
-top to bottom without backtracking. Every finding whose fix is a removal names the lines it deletes.
+top to bottom without backtracking. Every finding whose fix deletes more than it adds names the lines it deletes.
 Prefer composing small pieces over configuring one piece with options, flags or modes. "There is no
 shorter way" is a claim to check — against a library, a repo helper, or a formulation with fewer
 moving parts — never one to assume. Control flow a reader has to simulate is a design defect, not a
@@ -159,8 +159,8 @@ const refute = f =>
     `${DIFF_SCOPE}\n\nTry to refute this finding: [${f.severity}] ${f.file}:${f.line} — ${f.issue}\n` +
       `Its fix: ${f.fix}\n` +
       `Read the code. Refute it if it misreads the diff, is already handled elsewhere, or is ` +
-      `out of scope. Default to refuted:true when uncertain — but where the fix is to remove code, ` +
-      `refute it only by naming what breaks if it goes. Reading well, naming a concept or ` +
+      `out of scope. Default to refuted:true when uncertain — but where the fix deletes more than ` +
+      `it adds, refute it only by naming what breaks if it goes. Reading well, naming a concept or ` +
       `possible future reuse are not breakages.`,
     { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: 'Verify', schema: REFUTATION }
   ).then(refutation => ({ ...f, ...(refutation ?? { unverified: true }) }))
