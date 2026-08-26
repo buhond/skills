@@ -21,20 +21,6 @@ Prefer one root cause over several symptoms of it.`
 const REVIEW_SCOPE = `${DIFF_SCOPE}
 Report findings only; another agent applies the fixes.
 
-The bar before all others is line count: the fewest lines that do the job, read top to bottom
-without backtracking. Every line the feature does not need is a finding, and every finding names
-the lines it deletes. Prefer composing small pieces over configuring one piece with options, flags
-or modes. When a unit is long, find the shorter route before accepting it: a library, framework
-affordance or repo helper that already does the work, or a formulation with fewer moving parts.
-"There is no shorter way" is a claim to check, never one to assume. Control flow a reader has to
-simulate — state mutated at a distance from where it is read, a value threaded
-through layers that do not use it, a branch whose condition encodes a caller you must go find —
-is a design defect, not a matter of taste.
-
-Grade a finding by its cause, not by how it looks. If awkward-reading code is awkward because it
-carries code, state or indirection the feature does not need, it is that removal's severity, not
-a cosmetic one.
-
 Severity:
 P0 — incorrect architecture or behavior with regression risk.
 P1 — design flaw that should block merge. An abstraction added without present need, more code
@@ -44,22 +30,34 @@ or changed behavior with no test are all P1 or worse.
 P2 — meaningful maintainability or clarity issue that no deletion would fix.
 P3 — local and cosmetic, with no consequence for the design.
 
-File each defect once, at its true severity. Do not restate a finding you already filed as a
-second, smaller one about the same cause elsewhere.`
+Grade a finding by its cause, not by how it looks: code that reads badly because it carries code,
+state or indirection the feature does not need is that removal's severity, not a cosmetic one.
+File each defect once, at that severity. Do not restate a finding you already filed as a second,
+smaller one about the same cause elsewhere.`
+
+const SIZE_BAR = `The bar before all others is line count: the fewest lines that do the job, read
+top to bottom without backtracking. Every finding names the lines it deletes. Prefer composing small
+pieces over configuring one piece with options, flags or modes. When a unit is long, find the shorter
+route before accepting it: a library, framework affordance or repo helper that already does the work,
+or a formulation with fewer moving parts. "There is no shorter way" is a claim to check,
+never one to assume. Control flow a reader has to simulate — state mutated at a distance from where
+it is read, a value threaded through layers that do not use it, a branch whose condition encodes a
+caller you must go find — is a design defect, not a matter of taste.`
 
 const readSkill = name =>
   `Read the ${name} skill — \`.agents/skills/${name}/SKILL.md\` from the repo root, or locate it
 with \`find . -path '*/${name}/SKILL.md'\` — and apply it as your only bar. If you cannot find and
-read that file, return \`unavailable: true\` with no findings rather than reviewing from memory.\n`
+read that file, return \`unavailable: true\` with no findings rather than reviewing from memory.`
 
 const RULES = [
   {
     key: 'kiss',
     skill: 'kiss',
-    prompt: `Find every line, branch, parameter, layer and abstraction in the diff
-that can be removed while behavior stays identical. For each, name what breaks if it is removed —
-if nothing breaks, it is a finding. Count an option, flag or mode added to an existing unit as
-removable whenever composing a separate small unit would serve the same caller.`,
+    sizeBar: true,
+    prompt: `Judge the diff as a whole before its parts: whether the behavior it adds needs this many
+files, units and moving parts, and name any file or unit that should not exist. Then within each unit
+find every line, branch, parameter, layer and abstraction that can be removed while behavior stays
+identical — name what breaks if it goes, and if nothing breaks it is a finding.`,
   },
   {
     key: 'folder-structure',
@@ -69,12 +67,14 @@ per export, kebab-case, file name matching the export, nesting by usage, colocat
   },
   {
     key: 'bad-patterns',
+    sizeBar: true,
     prompt: `Find bad patterns in the diff: duplicated logic, dead code, swallowed errors, mutation
 of shared state, misleading names, magic values, a symptom-level patch over a root cause,
 copy-paste shaped or prematurely generalized code.`,
   },
   {
     key: 'architecture',
+    sizeBar: true,
     prompt: `Judge ownership and dependency direction. Behavior belongs in the layer that owns the
 decision; details depend on policies, never the reverse. One source of truth per decision,
 dependency and state transition. Flag abstractions that mix orchestration with mechanics.`,
@@ -86,11 +86,11 @@ with no test, and tests that assert implementation details instead of behavior.`
   },
   {
     key: 'readability',
+    sizeBar: true,
     prompt: `Judge readability and naming: names that do not say what the thing is, inverted or
-nested conditions that could read positively, comments that restate the code, and anything a
-reader has to hold in their head to follow. Trace each changed unit top to bottom once: every
-jump backwards, or out to another file, to learn what a value holds is a finding. Where the cause
-is code or state the feature does not need, report the deletion rather than the awkwardness.`,
+nested conditions that could read positively, and comments that restate the code. Trace each
+changed unit top to bottom once: every jump backwards, or out to another file, to learn what a
+value holds is a finding.`,
   },
 ]
 
@@ -169,10 +169,15 @@ const refute = f =>
     { label: `verify:${f.rule}:${f.file}:${f.line}`, phase: 'Verify', schema: REFUTATION }
   ).then(refutation => ({ ...f, ...(refutation ?? { unverified: true }) }))
 
+const reviewPrompt = rule =>
+  [REVIEW_SCOPE, rule.sizeBar && SIZE_BAR, rule.skill && readSkill(rule.skill), rule.prompt]
+    .filter(Boolean)
+    .join('\n\n')
+
 const ruleResults = await pipeline(
   RULES,
   rule =>
-    agent(`${REVIEW_SCOPE}\n\n${rule.skill ? readSkill(rule.skill) : ''}${rule.prompt}`, {
+    agent(reviewPrompt(rule), {
       label: rule.key,
       phase: 'Review',
       schema: findingsSchema(rule),
