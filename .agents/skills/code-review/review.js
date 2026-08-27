@@ -70,12 +70,12 @@ const rules = {
     worse defect.
   `,
 
-  'reinventing-the-wheel': `
+  'no-reinvention': `
     Find code redoing what the language, the framework, a package.json dependency or an existing
     repo helper already does. Search before concluding something is new, then name the replacement.
   `,
 
-  spaghetti: `
+  'no-spaghetti': `
     Read each changed unit top to bottom once. Every jump backwards, or out to another file, to
     learn what a value holds is a finding.
 
@@ -83,7 +83,7 @@ const rules = {
     what the thing is, magic values, swallowed errors, shared mutable state, comments restating code.
   `,
 
-  tests: `
+  'test-coverage': `
     Changed behavior with no test is a blocker. Flag tests asserting implementation instead of
     behavior, and tests that pass whether or not the guard they name is there.
   `,

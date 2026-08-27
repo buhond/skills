@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: 'Run a workflow that reviews a diff with one agent per rule — kiss, folder structure, solid, composition, dry, reinventing the wheel, spaghetti, tests — verifies every blocking finding, then fixes the code. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or as a quality gate before merge.'
+description: 'Run a workflow that reviews a diff with one agent per rule — kiss, folder structure, solid, composition over configuration, dry, no reinvention, no spaghetti, test coverage — verifies every blocking finding, then fixes the code. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or as a quality gate before merge.'
 ---
 
 # Code Review
