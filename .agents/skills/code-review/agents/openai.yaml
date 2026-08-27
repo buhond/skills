@@ -1,4 +1,4 @@
 interface:
   display_name: 'Code Review'
-  short_description: 'Review a diff with one agent per rule, then verify every blocking finding'
-  default_prompt: 'Use $code-review to review this diff with one agent per rule and a pass/fail verdict.'
+  short_description: 'Review a diff with one agent per rule, verify every blocker, then fix the code'
+  default_prompt: 'Use $code-review to review this diff and fix what it finds.'
