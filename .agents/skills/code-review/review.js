@@ -23,14 +23,14 @@ of scope. Report findings only — another agent fixes them. File each defect on
 - minor: local and cosmetic.
 
 The bar under every rule: the fewest lines that do the job, read top to bottom without backtracking.
-The best fix deletes more than it adds, so name the lines yours deletes. Before calling something
+The best fix deletes more than it adds, so name the lines yours deletes — and before calling code
 irreducible, look for a library, a repo helper or a simpler formulation.
 `
 
 const useSkill = (name) => `
-Apply the ${name} skill as this rule's bar: read \`.agents/skills/${name}/SKILL.md\` from the repo
-root, or \`find . -path '*/${name}/SKILL.md'\`. If you cannot read it, return \`unavailable: true\`
-instead of reviewing from memory.
+This rule's bar is the ${name} skill: read \`.agents/skills/${name}/SKILL.md\`, or find it with
+\`find . -path '*/${name}/SKILL.md'\`. Cannot read it? Return \`unavailable: true\` rather than
+review from memory.
 `
 
 const rules = {
@@ -205,20 +205,21 @@ const listing = kept
   .join('\n')
 
 const grouped =
-  kept.length > 1 &&
-  (await agent(grouping(listing), { label: 'group', phase: 'Group', schema: groups }))
+  kept.length > 1
+    ? (await agent(grouping(listing), { label: 'group', phase: 'Group', schema: groups }))?.groups
+    : []
 
-const taken = new Set()
-const byRootCause = []
+const claimed = new Set()
+const claim = (group) => {
+  const members = group.filter((index) => kept[index] && !claimed.has(index))
 
-for (const group of grouped ? grouped.groups : []) {
-  const members = group.filter((index) => kept[index] && !taken.has(index))
-
-  members.forEach((index) => taken.add(index))
-  if (members.length) byRootCause.push(members)
+  members.forEach((index) => claimed.add(index))
+  return members
 }
 
-kept.forEach((_, index) => taken.has(index) || byRootCause.push([index]))
+const byRootCause = [...(grouped ?? []), ...kept.map((_, index) => [index])]
+  .map(claim)
+  .filter((group) => group.length)
 
 return {
   verdict: incomplete || kept.some(blocks) ? 'fail' : 'pass',
