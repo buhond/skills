@@ -1,26 +1,42 @@
 ---
 name: code-review
-description: 'Run a workflow that reviews a diff with one agent per rule — kiss, folder structure, bad patterns, architecture, tests, readability — then verifies each blocking finding. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or for a quality gate before merge.'
+description: 'Run a workflow that reviews a diff with one agent per rule — kiss, folder structure, solid, composition, dry, reinventing the wheel, spaghetti, tests — verifies every blocking finding, then fixes the code. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or as a quality gate before merge.'
 ---
 
 # Code Review
 
-Reviewers — one subagent per rule, spawned by the workflow — judge the code. You apply the fixes.
+One subagent per rule judges the diff. You fix the code. The user runs this to end up with clean code, not with a list.
 
 ## Workflow
 
-1. Run `Workflow({ scriptPath: "<this skill's directory>/review.js", args: { base } })`, where `base` is the branch to diff against, default `origin/main`. If the Workflow tool is unavailable, say so and stop — never self-review in its place.
-2. Surface the findings verbatim before acting on any of them.
+1. Run `Workflow({ scriptPath: "<this skill's directory>/review.js", args: { base } })` — `base` is the branch to diff against, default `origin/main`. If the Workflow tool is unavailable, say so and stop; never self-review in its place.
+2. Report the findings in the format below, then fix them.
 3. Act on them whatever the verdict — `pass` means nothing blocks merge, not that nothing is left to fix. Rerun only on `fail`.
-4. Stop and put the choice to the user after two failed cycles, or as soon as a run reverses a finding you applied or re-raises one you declined for a reason that still holds. Those runs are sampling taste, not finding defects.
+4. Decide every finding yourself. Never ask the user which to apply, which to decline, or whether to keep going — you have the diff, the codebase and the reviewer's reasoning, which is everything the call needs. Apply what improves the code; decline what doesn't.
+5. Reruns sample taste. A finding that reverses one you applied, or re-raises one you declined for a reason that still holds, is noise: keep your version and don't rerun for it. Stop after two `fail` cycles or once only that churn is left — a `fail` you have judged and answered is a finished review, not a blocked one.
+
+Raise something to the user only where a finding genuinely conflicts with their stated intent for the change, and then as a one-line note beside the finished work.
+
+## Report
+
+One sentence, then one table. Nothing else — no per-finding prose, no restating what the table says.
+
+> Verdict: **pass**. 5 applied, 2 declined.
+>
+> | Finding | Verdict |
+> | --- | --- |
+> | **blocker** · fetch follows redirects off the allowlist | Applied — `redirect: 'error'` |
+> | **major** · size cap checked after the body is buffered | Applied — reject on `content-length` |
+> | **minor** · `routeImage` duplicates `image` | Declined — cycle 2 raised the opposite |
+
+Use each finding's `tldr`, worst first. The verdict column is what you did, in a few words. Add a row for every finding, including declined ones; corroborating duplicates never get their own row.
 
 ## Result
 
 `{ verdict, unreviewedRules, findings, dropped }`
 
-- `verdict` — report as returned; never talk a finding down to reach `pass`.
 - `unreviewedRules` — their agent died or could not read its skill file. Rerun them before trusting the result.
-- `findings` — one per root cause, worst first, tagged with its `rule`; duplicates raised by other rules sit under `corroboratedBy`. `unverified` means its verify agent died.
-- `dropped` — blocking findings the verify pass refuted, with its `reason`. Read them.
+- `findings` — one per root cause, worst first, tagged with its `rule`; duplicates from other rules sit under `corroboratedBy`. `unverified` means its verify agent died.
+- `dropped` — blocking findings the verify pass refuted, with its `reason`. Read them; they never reach the table.
 
-`review.js` owns the scope, rubric, weights, verify policy and fail condition. Don't restate them here.
+`review.js` owns the rules, scope, severities, verify policy and fail condition. Don't restate them here.
