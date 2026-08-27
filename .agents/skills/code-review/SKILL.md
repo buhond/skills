@@ -10,16 +10,15 @@ One subagent per rule judges the diff. You fix the code. The user runs this to e
 ## Workflow
 
 1. Run `Workflow({ scriptPath: "<this skill's directory>/review.js", args: { base } })` — `base` is the branch to diff against, default `origin/main`. If the Workflow tool is unavailable, say so and stop; never self-review in its place.
-2. Report the findings in the format below, then fix them.
-3. Act on them whatever the verdict — `pass` means nothing blocks merge, not that nothing is left to fix. Rerun only on `fail`.
-4. Decide every finding yourself. Never ask the user which to apply, which to decline, or whether to keep going — you have the diff, the codebase and the reviewer's reasoning, which is everything the call needs. Apply what improves the code; decline what doesn't.
-5. Reruns sample taste. A finding that reverses one you applied, or re-raises one you declined for a reason that still holds, is noise: keep your version and don't rerun for it. Stop after two `fail` cycles or once only that churn is left — a `fail` you have judged and answered is a finished review, not a blocked one.
+2. Report the findings as below, then fix them. Act on them whatever the verdict: `pass` means nothing blocks merge, not that nothing is left to fix. Rerun only on `fail`.
+3. Decide every finding yourself — you have the diff, the code and the reviewer's reasoning, which is everything the call needs. Never ask the user which to apply or whether to continue.
+4. Reruns sample taste. A finding that reverses one you applied, or re-raises one you declined for a reason that still holds, is churn: keep your version. Stop after two `fail` cycles, or once only churn is left.
 
-Raise something to the user only where a finding genuinely conflicts with their stated intent for the change, and then as a one-line note beside the finished work.
+Raise something to the user only where a finding conflicts with their stated intent, as a one-line note beside the finished work.
 
 ## Report
 
-One sentence, then one table. Nothing else — no per-finding prose, no restating what the table says.
+One sentence, then one table, nothing else.
 
 > Verdict: **pass**. 5 applied, 2 declined.
 >
@@ -29,14 +28,14 @@ One sentence, then one table. Nothing else — no per-finding prose, no restatin
 > | **major** · size cap checked after the body is buffered | Applied — reject on `content-length` |
 > | **minor** · `routeImage` duplicates `image` | Declined — cycle 2 raised the opposite |
 
-Use each finding's `tldr`, worst first. The verdict column is what you did, in a few words. Add a row for every finding, including declined ones; corroborating duplicates never get their own row.
+One row per finding, declined ones included, worst first, using its `tldr`. Corroborating duplicates never get their own row.
 
 ## Result
 
 `{ verdict, unreviewedRules, findings, dropped }`
 
 - `unreviewedRules` — their agent died or could not read its skill file. Rerun them before trusting the result.
-- `findings` — one per root cause, worst first, tagged with its `rule`; duplicates from other rules sit under `corroboratedBy`. `unverified` means its verify agent died.
+- `findings` — one per root cause, worst first, tagged with its `rule`; duplicates sit under `corroboratedBy`. `unverified` means its verify agent died.
 - `dropped` — blocking findings the verify pass refuted, with its `reason`. Read them; they never reach the table.
 
 `review.js` owns the rules, scope, severities, verify policy and fail condition. Don't restate them here.
