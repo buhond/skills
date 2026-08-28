@@ -25,6 +25,10 @@ of scope. Report findings only — another agent fixes them. File each defect on
 The bar under every rule: the fewest lines that do the job, read top to bottom without backtracking.
 The best fix deletes more than it adds, so name the lines yours deletes — and before calling code
 irreducible, look for a library, a repo helper or a simpler formulation.
+
+Judge the diff against the repo, never in isolation. Before calling anything new, needed or fine,
+search out the nearest existing code doing the same job and read it: its conventions, and whatever
+the repo generates or declares as the source of a shape, outrank your taste and the diff's own.
 `
 
 const useSkill = (name) => `
@@ -39,7 +43,11 @@ const rules = {
 
     Start with the whole: does this behavior need this many files and moving parts? Then in each
     unit, find every line, branch, parameter and layer that could go with behavior unchanged. If
-    nothing breaks when it goes, it is a finding.
+    nothing breaks when it goes, it is a finding — a wrapper whose single caller is its only reason
+    to exist is such a layer, and inlining it is the fix.
+
+    Generality that holds a unit free of its callers is not that layer: narrowing it to today's one
+    caller buys lines with coupling, and is the worse defect.
   `,
 
   'folder-structure': `
@@ -57,9 +65,10 @@ const rules = {
     behind it, and anything untestable without standing up its dependencies.
   `,
 
-  composition: `
-    Flag units steered by flags, modes or options where the caller should instead assemble smaller
-    pieces. Every boolean parameter that picks behavior is a finding.
+  decoupling: `
+    A unit must not know who calls it. Flag every flag, mode, option, branch, name or import it grew
+    to serve one caller — every boolean parameter that picks behavior included — and hand that
+    choice back to the caller, to assemble from smaller pieces.
   `,
 
   dry: `
@@ -70,17 +79,26 @@ const rules = {
     worse defect.
   `,
 
-  'no-reinvention': `
-    Find code redoing what the language, the framework, a package.json dependency or an existing
-    repo helper already does. Search before concluding something is new, then name the replacement.
+  'prior-art': `
+    Nothing here is new until you have searched. Flag code redoing what the language, the framework,
+    a package.json dependency or a repo helper already does, and name the replacement.
+
+    Where nothing does the job yet, the repo still says how it is done: read the nearest thing of the
+    same kind — adapter, hook, form, schema, module layout — and flag shape that answers a solved
+    problem its own way, naming the file to copy. Types and constants restating what the repo
+    generates or declares elsewhere are the same defect: depend on the source, don't retype it.
   `,
 
-  'no-spaghetti': `
+  clarity: `
     Read each changed unit top to bottom once. Every jump backwards, or out to another file, to
     learn what a value holds is a finding.
 
     Flag control flow you have to simulate, conditions that could read positively, names that hide
-    what the thing is, magic values, swallowed errors, shared mutable state, comments restating code.
+    what the thing is, magic values, swallowed errors, shared mutable state.
+
+    Every comment narrating what the code does is a finding: it marks code that failed to say it,
+    and the fix is the name or the shape, never a better sentence. Only what code cannot carry — a
+    reason, a link, a warning — survives.
   `,
 
   'test-coverage': `
@@ -100,7 +118,12 @@ Its fix: ${finding.fix}
 
 Refute it if it misreads the diff, is already handled elsewhere, or is out of scope, and default to
 \`refuted: true\` when unsure. Where its fix deletes more than it adds, refute it only by naming what
-breaks — reading well, naming a concept and future reuse are not breakages.
+breaks — reading well, naming a concept and future reuse are not breakages, but a unit left knowing
+its callers is.
+
+Where it says the diff diverges from how the repo already does this, go and read the code it names:
+refute it only if that precedent does not exist or cannot carry this case. That the new shape reads
+well is not a refutation.
 `
 
 const grouping = (listing) => `
