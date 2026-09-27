@@ -22,10 +22,6 @@ of scope. Report findings only — another agent fixes them. File each defect on
 - major: right behavior, wrong shape.
 - minor: local and cosmetic.
 
-The bar under every rule: the fewest lines that do the job, read top to bottom without backtracking.
-The best fix deletes more than it adds, so name the lines yours deletes — and before calling code
-irreducible, look for a library, a repo helper or a simpler formulation.
-
 Judge the diff against the repo, never in isolation. Before calling anything new, needed or fine,
 search out the nearest existing code doing the same job and read it: its conventions, and whatever
 the repo generates or declares as the source of a shape, outrank your taste and the diff's own.
@@ -222,7 +218,11 @@ const verify = (finding) =>
 const reviewed = await pipeline(
   Object.keys(rules),
   (rule) =>
-    agent(`${scope}\n${rules[rule]}`, { label: rule, phase: 'Review', schema: findings(rule) }),
+    agent(`${scope}\n${rules[rule]}\nNothing in the diff this rule covers? Return no findings.`, {
+      label: rule,
+      phase: 'Review',
+      schema: findings(rule),
+    }),
   (result, rule) => {
     if (!result || result.unavailable) return { rule, read: false, findings: [] }
 
