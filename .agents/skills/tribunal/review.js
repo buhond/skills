@@ -8,7 +8,9 @@ export const meta = {
   ],
 }
 
-const { base = 'origin/main' } = args || {}
+const { base = 'origin/main', files, rules: rerun } = args || {}
+
+if (!files?.length) throw new Error('pass args.files: the paths the diff changes')
 
 const SEVERITIES = ['blocker', 'major', 'minor']
 
@@ -159,7 +161,7 @@ well is not a refutation.
 const grouping = (listing) => `
 ${scope}
 
-${Object.keys(rules).length} reviewers judged this diff blind to each other, so one defect often
+${selected.length} reviewers judged this diff blind to each other, so one defect often
 appears many times over.
 
 ${listing}
@@ -228,8 +230,20 @@ const verify = (finding) =>
     schema: refuted,
   }).then((verdict) => ({ ...finding, ...(verdict ?? { unverified: true }) }))
 
+const touches = {
+  'design-system': /\.([jt]sx|css|scss)$/,
+  'state-ownership': /\.[jt]sx$/,
+  'type-safety': /\.tsx?$/,
+}
+
+const selected = (rerun ?? Object.keys(rules)).filter((rule) =>
+  files.some((file) => (touches[rule] ?? /./).test(file)),
+)
+
+log(`reviewing: ${selected.join(', ')}`)
+
 const reviewed = await pipeline(
-  Object.keys(rules),
+  selected,
   (rule) =>
     agent(`${scope}\n${rules[rule]}\nNothing in the diff this rule covers? Return no findings.`, {
       label: rule,
@@ -263,7 +277,12 @@ const listing = kept
 
 const grouped =
   kept.length > 1
-    ? (await agent(grouping(listing), { label: 'group', phase: 'Group', schema: groups }))?.groups
+    ? (await agent(grouping(listing), {
+        label: 'group',
+        phase: 'Group',
+        schema: groups,
+        effort: 'low',
+      }))?.groups
     : []
 
 const claimed = new Set()
