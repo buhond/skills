@@ -1,16 +1,16 @@
 ---
-name: code-review
-description: 'Run a workflow that reviews a diff with one agent per rule — kiss, folder structure, solid, decoupling, dry, prior art, clarity, test coverage — verifies every blocking finding, then fixes the code. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or as a quality gate before merge.'
+name: tribunal
+description: 'Run a workflow that reviews a diff with one agent per rule, verifies every blocking finding, then fixes the code. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or as a quality gate before merge.'
 ---
 
-# Code Review
+# Tribunal
 
 One subagent per rule judges the diff. You fix the code. The user runs this to end up with clean code, not with a list.
 
 ## Workflow
 
-1. Run `Workflow({ scriptPath: "<this skill's directory>/review.js", args: { base } })` — `base` is the branch to diff against, default `origin/main`. If the Workflow tool is unavailable, say so and stop; never self-review in its place.
-2. Report the findings as below, then fix them. Act on them whatever the verdict: `pass` means nothing blocks merge, not that nothing is left to fix. Rerun only on `fail`.
+1. Run `Workflow({ scriptPath: "<this skill's directory>/review.js", args: { base, files } })` — `base` is the branch to diff against, default `origin/main`; `files` is the array of paths `git diff --name-only <base>...HEAD` lists. If the Workflow tool is unavailable, say so and stop; never self-review in its place.
+2. Report the findings as below, then fix them. Act on them whatever the verdict: `pass` means nothing blocks merge, not that nothing is left to fix. Rerun only on `fail`, passing `rules`: the rules that raised a blocker or are in `unreviewedRules`.
 3. Decide every finding yourself — you have the diff, the code and the reviewer's reasoning, which is everything the call needs. Never ask the user which to apply or whether to continue.
 4. Reruns sample taste. A finding that reverses one you applied, or re-raises one you declined for a reason that still holds, is churn: keep your version. Stop after two `fail` cycles, or once only churn is left.
 

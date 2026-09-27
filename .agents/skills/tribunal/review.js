@@ -1,5 +1,5 @@
 export const meta = {
-  name: 'code-review',
+  name: 'tribunal',
   description: 'Review a diff with one agent per rule, then verify every blocking finding',
   phases: [
     { title: 'Review', detail: 'one agent per rule' },
@@ -8,7 +8,9 @@ export const meta = {
   ],
 }
 
-const { base = 'origin/main' } = args || {}
+const { base = 'origin/main', files, rules: rerun } = args || {}
+
+if (!files?.length) throw new Error('pass args.files: the paths the diff changes')
 
 const SEVERITIES = ['blocker', 'major', 'minor']
 
@@ -22,19 +24,15 @@ of scope. Report findings only — another agent fixes them. File each defect on
 - major: right behavior, wrong shape.
 - minor: local and cosmetic.
 
-The bar under every rule: the fewest lines that do the job, read top to bottom without backtracking.
-The best fix deletes more than it adds, so name the lines yours deletes — and before calling code
-irreducible, look for a library, a repo helper or a simpler formulation.
-
 Judge the diff against the repo, never in isolation. Before calling anything new, needed or fine,
 search out the nearest existing code doing the same job and read it: its conventions, and whatever
 the repo generates or declares as the source of a shape, outrank your taste and the diff's own.
 `
 
 const useSkill = (name) => `
-This rule's bar is the ${name} skill: read \`.agents/skills/${name}/SKILL.md\`, or find it with
-\`find . -path '*/${name}/SKILL.md'\`. Cannot read it? Return \`unavailable: true\` rather than
-review from memory.
+This rule's bar is the ${name} skill: read its SKILL.md from \`.agents/skills/${name}/\` or
+\`~/.claude/skills/${name}/\`. Cannot read it? Return \`unavailable: true\` rather than review from
+memory.
 `
 
 const rules = {
@@ -57,18 +55,14 @@ const rules = {
     after its export, nested by usage, tests alongside.
   `,
 
-  solid: `
-    One unit, one reason to change. Each decision belongs to the layer that owns it, and details
-    depend on policies rather than the reverse.
+  'single-responsibility': `
+    One unit, one job. Flag units doing several: a component that fetches, transforms and renders;
+    a function mixing orchestration with the mechanics it orchestrates; anything untestable without
+    standing up its dependencies. The fix splits it along its jobs.
 
-    Flag units mixing orchestration with mechanics, callers reaching past a neighbour to the detail
-    behind it, and anything untestable without standing up its dependencies.
-  `,
-
-  decoupling: `
-    A unit must not know who calls it. Flag every flag, mode, option, branch, name or import it grew
-    to serve one caller — every boolean parameter that picks behavior included — and hand that
-    choice back to the caller, to assemble from smaller pieces.
+    Serving one caller is a job the unit took from that caller. Flag every flag, mode, option,
+    branch, name or import it grew for one caller — every boolean parameter that picks behavior
+    included — and hand that choice back to the caller, to assemble from smaller pieces.
   `,
 
   dry: `
@@ -87,6 +81,44 @@ const rules = {
     same kind — adapter, hook, form, schema, module layout — and flag shape that answers a solved
     problem its own way, naming the file to copy. Types and constants restating what the repo
     generates or declares elsewhere are the same defect: depend on the source, don't retype it.
+  `,
+
+  'design-system': `
+    UI is built from the repo's theme and shared components. Find them first: the theme or token
+    files, the UI library in package.json, the shared components folder.
+
+    Flag colors, spacing, sizes, fonts, breakpoints and shadows hard-coded where the theme names
+    them; one-off styles a variant or prop already gives; and custom components redoing what the
+    library or a shared component does, naming the one to use.
+  `,
+
+  'state-ownership': `
+    Every piece of state has one owner and one source. Flag props copied into state, effects that
+    keep one value in step with another, stored values render could compute, the same state held in
+    two places, and effects doing what belongs in the event handler that caused it.
+
+    The fix derives the value, lifts the state to the nearest common owner, or moves the work into
+    the handler.
+  `,
+
+  'type-safety': `
+    Types make invalid states impossible to write. Flag \`any\`, \`as\` casts, non-null assertions
+    and ts-ignore; optional fields that only make sense together, where a discriminated union says
+    which combinations exist; and strings or numbers standing in for a closed set.
+  `,
+
+  performance: `
+    Work grows with what the caller needs, not with the data. Flag queries or requests inside loops,
+    lists and queries with no limit or pagination, work redone on every render or request that could
+    run once, re-renders caused by unstable props or context, and whole payloads fetched to read one
+    field.
+  `,
+
+  security: `
+    Every input from outside the process is hostile. Flag input reaching a query, shell, HTML, file
+    path or URL unchecked; endpoints and actions missing authorization; secrets in code, logs or the
+    client bundle; and sensitive data returned or logged beyond what the caller needs. An
+    exploitable path is a blocker.
   `,
 
   clarity: `
@@ -129,7 +161,7 @@ well is not a refutation.
 const grouping = (listing) => `
 ${scope}
 
-${Object.keys(rules).length} reviewers judged this diff blind to each other, so one defect often
+${selected.length} reviewers judged this diff blind to each other, so one defect often
 appears many times over.
 
 ${listing}
@@ -198,10 +230,26 @@ const verify = (finding) =>
     schema: refuted,
   }).then((verdict) => ({ ...finding, ...(verdict ?? { unverified: true }) }))
 
+const touches = {
+  'design-system': /\.([jt]sx|css|scss)$/,
+  'state-ownership': /\.[jt]sx$/,
+  'type-safety': /\.tsx?$/,
+}
+
+const selected = (rerun ?? Object.keys(rules)).filter((rule) =>
+  files.some((file) => (touches[rule] ?? /./).test(file)),
+)
+
+log(`reviewing: ${selected.join(', ')}`)
+
 const reviewed = await pipeline(
-  Object.keys(rules),
+  selected,
   (rule) =>
-    agent(`${scope}\n${rules[rule]}`, { label: rule, phase: 'Review', schema: findings(rule) }),
+    agent(`${scope}\n${rules[rule]}\nNothing in the diff this rule covers? Return no findings.`, {
+      label: rule,
+      phase: 'Review',
+      schema: findings(rule),
+    }),
   (result, rule) => {
     if (!result || result.unavailable) return { rule, read: false, findings: [] }
 
@@ -229,7 +277,12 @@ const listing = kept
 
 const grouped =
   kept.length > 1
-    ? (await agent(grouping(listing), { label: 'group', phase: 'Group', schema: groups }))?.groups
+    ? (await agent(grouping(listing), {
+        label: 'group',
+        phase: 'Group',
+        schema: groups,
+        effort: 'low',
+      }))?.groups
     : []
 
 const claimed = new Set()
