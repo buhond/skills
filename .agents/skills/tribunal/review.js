@@ -30,9 +30,9 @@ the repo generates or declares as the source of a shape, outrank your taste and 
 `
 
 const useSkill = (name) => `
-This rule's bar is the ${name} skill: read \`.agents/skills/${name}/SKILL.md\`, or find it with
-\`find . -path '*/${name}/SKILL.md'\`. Cannot read it? Return \`unavailable: true\` rather than
-review from memory.
+This rule's bar is the ${name} skill: read its SKILL.md from \`.agents/skills/${name}/\` or
+\`~/.claude/skills/${name}/\`. Cannot read it? Return \`unavailable: true\` rather than review from
+memory.
 `
 
 const rules = {
