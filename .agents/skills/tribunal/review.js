@@ -53,15 +53,14 @@ const rules = {
     after its export, nested by usage, tests alongside.
   `,
 
-  solid: `
-    One unit, one reason to change. Each decision belongs to the layer that owns it, details depend
-    on policies rather than the reverse, and a unit must not know who calls it.
+  'single-responsibility': `
+    One unit, one job. Flag units doing several: a component that fetches, transforms and renders;
+    a function mixing orchestration with the mechanics it orchestrates; anything untestable without
+    standing up its dependencies. The fix splits it along its jobs.
 
-    Flag units mixing orchestration with mechanics, callers reaching past a neighbour to the detail
-    behind it, and anything untestable without standing up its dependencies. Flag every flag, mode,
-    option, branch, name or import a unit grew to serve one caller — every boolean parameter that
-    picks behavior included — and hand that choice back to the caller, to assemble from smaller
-    pieces.
+    Serving one caller is a job the unit took from that caller. Flag every flag, mode, option,
+    branch, name or import it grew for one caller — every boolean parameter that picks behavior
+    included — and hand that choice back to the caller, to assemble from smaller pieces.
   `,
 
   dry: `
