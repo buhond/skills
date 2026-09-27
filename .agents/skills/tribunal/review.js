@@ -1,5 +1,5 @@
 export const meta = {
-  name: 'code-review',
+  name: 'tribunal',
   description: 'Review a diff with one agent per rule, then verify every blocking finding',
   phases: [
     { title: 'Review', detail: 'one agent per rule' },

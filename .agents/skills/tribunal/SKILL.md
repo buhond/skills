@@ -1,9 +1,9 @@
 ---
-name: code-review
+name: tribunal
 description: 'Run a workflow that reviews a diff with one agent per rule — kiss, folder structure, solid, decoupling, dry, prior art, clarity, test coverage — verifies every blocking finding, then fixes the code. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or as a quality gate before merge.'
 ---
 
-# Code Review
+# Tribunal
 
 One subagent per rule judges the diff. You fix the code. The user runs this to end up with clean code, not with a list.
 
