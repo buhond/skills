@@ -105,6 +105,20 @@ const rules = {
     which combinations exist; and strings or numbers standing in for a closed set.
   `,
 
+  performance: `
+    Work grows with what the caller needs, not with the data. Flag queries or requests inside loops,
+    lists and queries with no limit or pagination, work redone on every render or request that could
+    run once, re-renders caused by unstable props or context, and whole payloads fetched to read one
+    field.
+  `,
+
+  security: `
+    Every input from outside the process is hostile. Flag input reaching a query, shell, HTML, file
+    path or URL unchecked; endpoints and actions missing authorization; secrets in code, logs or the
+    client bundle; and sensitive data returned or logged beyond what the caller needs. An
+    exploitable path is a blocker.
+  `,
+
   clarity: `
     Read each changed unit top to bottom once. Every jump backwards, or out to another file, to
     learn what a value holds is a finding.
