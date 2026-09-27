@@ -58,17 +58,14 @@ const rules = {
   `,
 
   solid: `
-    One unit, one reason to change. Each decision belongs to the layer that owns it, and details
-    depend on policies rather than the reverse.
+    One unit, one reason to change. Each decision belongs to the layer that owns it, details depend
+    on policies rather than the reverse, and a unit must not know who calls it.
 
     Flag units mixing orchestration with mechanics, callers reaching past a neighbour to the detail
-    behind it, and anything untestable without standing up its dependencies.
-  `,
-
-  decoupling: `
-    A unit must not know who calls it. Flag every flag, mode, option, branch, name or import it grew
-    to serve one caller — every boolean parameter that picks behavior included — and hand that
-    choice back to the caller, to assemble from smaller pieces.
+    behind it, and anything untestable without standing up its dependencies. Flag every flag, mode,
+    option, branch, name or import a unit grew to serve one caller — every boolean parameter that
+    picks behavior included — and hand that choice back to the caller, to assemble from smaller
+    pieces.
   `,
 
   dry: `
@@ -87,6 +84,30 @@ const rules = {
     same kind — adapter, hook, form, schema, module layout — and flag shape that answers a solved
     problem its own way, naming the file to copy. Types and constants restating what the repo
     generates or declares elsewhere are the same defect: depend on the source, don't retype it.
+  `,
+
+  'design-system': `
+    UI is built from the repo's theme and shared components. Find them first: the theme or token
+    files, the UI library in package.json, the shared components folder.
+
+    Flag colors, spacing, sizes, fonts, breakpoints and shadows hard-coded where the theme names
+    them; one-off styles a variant or prop already gives; and custom components redoing what the
+    library or a shared component does, naming the one to use.
+  `,
+
+  'state-ownership': `
+    Every piece of state has one owner and one source. Flag props copied into state, effects that
+    keep one value in step with another, stored values render could compute, the same state held in
+    two places, and effects doing what belongs in the event handler that caused it.
+
+    The fix derives the value, lifts the state to the nearest common owner, or moves the work into
+    the handler.
+  `,
+
+  'type-safety': `
+    Types make invalid states impossible to write. Flag \`any\`, \`as\` casts, non-null assertions
+    and ts-ignore; optional fields that only make sense together, where a discriminated union says
+    which combinations exist; and strings or numbers standing in for a closed set.
   `,
 
   clarity: `
