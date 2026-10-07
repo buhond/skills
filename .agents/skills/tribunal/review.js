@@ -235,7 +235,7 @@ const blocks = (finding) => finding.severity === 'blocker'
 
 const verified = (finding) =>
   blocks(finding) ||
-  (finding.severity === 'major' && ['kiss', 'dry', 'single-responsibility'].includes(finding.rule))
+  (finding.severity === 'major' && ['kiss', 'dry', 'single-responsibility', 'performance'].includes(finding.rule))
 
 const verify = (finding) =>
   agent(refutation(finding), {
