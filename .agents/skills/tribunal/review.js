@@ -1,9 +1,9 @@
 export const meta = {
   name: 'tribunal',
-  description: 'Review a diff with one agent per rule, then verify every blocking finding',
+  description: 'Review a diff with one agent per rule, then verify blockers and contested majors',
   phases: [
     { title: 'Review', detail: 'one agent per rule' },
-    { title: 'Verify', detail: 'refute each blocker' },
+    { title: 'Verify', detail: 'refute blockers and contested majors' },
     { title: 'Group', detail: 'one row per root cause' },
   ],
 }
@@ -112,6 +112,16 @@ const rules = {
     lists and queries with no limit or pagination, work redone on every render or request that could
     run once, re-renders caused by unstable props or context, and whole payloads fetched to read one
     field.
+  `,
+
+  correctness: `
+    The code does what its caller expects on every input, not only the one it was written for.
+    Walk each changed path with the empty, boundary and failing case in hand, and follow every
+    changed signature or behavior out to its callers.
+
+    Flag what breaks: a value null where it is used, a promise not awaited, a condition that
+    reads inverted, an error the caller handles but never receives, a caller the change forgot.
+    Wrong behavior is a blocker; name the input that triggers it.
   `,
 
   security: `
@@ -223,6 +233,10 @@ const bySeverity = (a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf
 
 const blocks = (finding) => finding.severity === 'blocker'
 
+const verified = (finding) =>
+  blocks(finding) ||
+  (finding.severity === 'major' && ['kiss', 'dry', 'single-responsibility', 'performance'].includes(finding.rule))
+
 const verify = (finding) =>
   agent(refutation(finding), {
     label: `verify:${label(finding)}`,
@@ -249,13 +263,14 @@ const reviewed = await pipeline(
       label: rule,
       phase: 'Review',
       schema: findings(rule),
+      ...(['correctness', 'security', 'performance'].includes(rule) && { effort: 'high' }),
     }),
   (result, rule) => {
     if (!result || result.unavailable) return { rule, read: false, findings: [] }
 
     const judged = result.findings
       .map((finding) => ({ ...finding, rule }))
-      .map((finding) => () => (blocks(finding) ? verify(finding) : finding))
+      .map((finding) => () => (verified(finding) ? verify(finding) : finding))
 
     return parallel(judged).then((findings) => ({ rule, read: true, findings }))
   },
