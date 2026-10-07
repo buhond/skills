@@ -1,6 +1,6 @@
 ---
 name: tribunal
-description: 'Run a workflow that reviews a diff with one agent per rule, verifies every blocking finding, then fixes the code. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or as a quality gate before merge.'
+description: 'Run a workflow that reviews a diff with one agent per rule, verifies the findings, then fixes the code. Use when asked to review code, a diff, or a PR, for feedback on code quality or design, or as a quality gate before merge.'
 ---
 
 # Tribunal
@@ -12,7 +12,7 @@ One subagent per rule judges the diff. You fix the code. The user runs this to e
 1. Commit pending changes first: reviewers read `git diff <base>...HEAD`, so uncommitted work is invisible to them.
 2. Read `review.js` from this skill's directory with the Read tool, since shell output truncates long files. Run `Workflow({ script: <its full contents>, args: { base, files } })` — `base` is the branch to diff against, default `origin/main`; `files` is the array of paths `git diff --name-only <base>...HEAD` lists. Never pass `scriptPath`: Workflow refuses paths outside the working directory. If the Workflow tool is unavailable, say so and stop; never self-review in its place.
 3. Fix the findings, whatever the verdict: `pass` means nothing blocks merge, not that nothing is left to fix. Commit, then rerun, passing `rules`: those whose findings you applied, plus `unreviewedRules`.
-4. Decide every finding yourself — you have the diff, the code and the reviewer's reasoning, which is everything the call needs. Never ask the user which to apply or whether to continue.
+4. Decide every finding yourself; never ask the user which to apply or whether to continue.
 5. Reruns sample taste. A finding that reverses one you applied, or re-raises one you declined for a reason that still holds, is churn: keep your version. Stop when a rerun brings nothing but churn, or after the cycles given as the skill's argument (`/tribunal 5`), default three, then report every finding as below.
 
 Where a finding conflicts with the user's stated intent, or the code makes no sense under any intent you can infer, leave that one unfixed: finish the rest, then ask in a one-line note with what you recommend.
