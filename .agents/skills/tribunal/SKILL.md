@@ -11,11 +11,11 @@ One subagent per rule judges the diff. You fix the code. The user runs this to e
 
 1. Commit pending changes first: reviewers read `git diff <base>...HEAD`, so uncommitted work is invisible to them.
 2. Read `review.js` from this skill's directory with the Read tool, since shell output truncates long files. Run `Workflow({ script: <its full contents>, args: { base, files } })` — `base` is the branch to diff against, default `origin/main`; `files` is the array of paths `git diff --name-only <base>...HEAD` lists. Never pass `scriptPath`: Workflow refuses paths outside the working directory. If the Workflow tool is unavailable, say so and stop; never self-review in its place.
-3. Report the findings as below, then fix them. Act on them whatever the verdict: `pass` means nothing blocks merge, not that nothing is left to fix. Rerun only on `fail`, passing `rules`: the rules that raised a blocker or are in `unreviewedRules`.
+3. Fix the findings, whatever the verdict: `pass` means nothing blocks merge, not that nothing is left to fix. Commit, then rerun, passing `rules`: those whose findings you applied, plus `unreviewedRules`.
 4. Decide every finding yourself — you have the diff, the code and the reviewer's reasoning, which is everything the call needs. Never ask the user which to apply or whether to continue.
-5. Reruns sample taste. A finding that reverses one you applied, or re-raises one you declined for a reason that still holds, is churn: keep your version. Stop after two `fail` cycles, or once only churn is left.
+5. Reruns sample taste. A finding that reverses one you applied, or re-raises one you declined for a reason that still holds, is churn: keep your version. Stop when a rerun brings nothing but churn, or after three cycles, then report every finding as below.
 
-Raise something to the user only where a finding conflicts with their stated intent, as a one-line note beside the finished work.
+Where a finding conflicts with the user's stated intent, or the code makes no sense under any intent you can infer, leave that one unfixed: finish the rest, then ask in a one-line note with what you recommend.
 
 ## Report
 
@@ -37,6 +37,6 @@ One row per finding, declined ones included, worst first, using its `tldr`. Corr
 
 - `unreviewedRules` — their agent died or could not read its skill file. Rerun them before trusting the result.
 - `findings` — one per root cause, worst first, tagged with its `rule`; duplicates sit under `corroboratedBy`. `unverified` means its verify agent died.
-- `dropped` — blocking findings the verify pass refuted, with its `reason`. Read them; they never reach the table.
+- `dropped` — findings the verify pass refuted, with its `reason`. Read them; they never reach the table.
 
 `review.js` owns the rules, scope, severities, verify policy and fail condition. Don't restate them here.
