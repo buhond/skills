@@ -263,6 +263,7 @@ const reviewed = await pipeline(
       label: rule,
       phase: 'Review',
       schema: findings(rule),
+      ...(['correctness', 'security', 'performance'].includes(rule) && { effort: 'high' }),
     }),
   (result, rule) => {
     if (!result || result.unavailable) return { rule, read: false, findings: [] }
