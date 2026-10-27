@@ -1,3 +1,0 @@
-interface:
-  display_name: "folder structure"
-  short_description: "One folder per component, nested by usage, named to match its export."

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Security"
+  short_description: "Treat every input from outside as hostile"

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Correctness"
+  short_description: "Make the code right for every input, not just one"

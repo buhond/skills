@@ -1,0 +1,3 @@
+interface:
+  display_name: "Prior Art"
+  short_description: "Reuse what the language, dependencies and repo already do"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tribunal"
+  short_description: "Review a diff with one agent per rule, verify every blocker, then fix the code"
+  default_prompt: "Use $tribunal to review this diff and fix what it finds."

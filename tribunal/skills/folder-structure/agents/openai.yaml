@@ -1,0 +1,3 @@
+interface:
+  display_name: "Folder Structure"
+  short_description: "One folder per export, named after it and nested by usage"

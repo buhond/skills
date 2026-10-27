@@ -1,0 +1,3 @@
+interface:
+  display_name: "No Slop"
+  short_description: "Delete code that only looks careful"
