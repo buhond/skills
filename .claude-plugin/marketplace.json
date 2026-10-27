@@ -8,8 +8,8 @@
   },
   "plugins": [
     {
-      "name": "supr",
-      "source": "./supr",
+      "name": "tribunal",
+      "source": "./tribunal",
       "description": "Code quality rules as skills, and tribunal: one reviewer per rule judges a diff, then the code gets fixed until a run leaves nothing to apply."
     }
   ]

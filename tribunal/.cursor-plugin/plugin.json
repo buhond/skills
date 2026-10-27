@@ -1,11 +1,11 @@
 {
-  "name": "supr",
+  "name": "tribunal",
   "version": "0.1.0",
   "description": "Code quality rules as skills, and tribunal: one reviewer per rule judges a diff, then the code gets fixed until a run leaves nothing to apply.",
   "author": {
     "name": "buhond"
   },
-  "homepage": "https://github.com/buhond/skills/tree/main/supr",
+  "homepage": "https://github.com/buhond/skills/tree/main/tribunal",
   "repository": "https://github.com/buhond/skills",
   "license": "MIT",
   "keywords": [
@@ -14,6 +14,6 @@
     "subagents",
     "code-quality"
   ],
-  "displayName": "supr",
+  "displayName": "tribunal",
   "skills": "./skills/"
 }

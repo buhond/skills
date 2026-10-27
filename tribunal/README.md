@@ -1,4 +1,4 @@
-# supr
+# tribunal
 
 Code quality rules, one skill each, and `tribunal`: one subagent per rule reviews a diff, the findings get verified, and the code gets fixed until a run leaves nothing to apply.
 
@@ -8,10 +8,10 @@ Claude Code:
 
 ```
 /plugin marketplace add buhond/skills
-/plugin install supr@buhond
+/plugin install tribunal@buhond
 ```
 
-Cursor: add `buhond/skills` as a plugin marketplace and install `supr`.
+Cursor: add `buhond/skills` as a plugin marketplace and install `tribunal`.
 
 ## Use
 
