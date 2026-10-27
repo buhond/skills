@@ -18,7 +18,7 @@ Severity:
 - **major:** it works, but the shape is wrong.
 - **minor:** small and local.
 
-Compare with the repo, not with your taste. Before calling anything new, needed or fine, find the nearest code in the repo that does the same job and read it. The repo's conventions, and any schema or generated code that defines a shape, win over your taste and over the diff.
+Compare with the repo, not with your taste. Before calling anything new, needed or fine, find the nearest code in the repo that does the same job and read it. The repo's conventions, and any schema or generated code that defines a shape, win over your taste and over the diff, except where your rule says the repo's habit doesn't count: then the rule's bar wins.
 
 ## Reviewer
 
