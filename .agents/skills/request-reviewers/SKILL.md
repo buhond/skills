@@ -16,6 +16,6 @@ Request one or two reviewers who own the code the PR touches, then ask their tea
 6. Search that channel for the PR's URL. Already posted? Stop.
 7. Post with the Slack tool the session has (MCP or tool gateway):
 
-   > Hi! Could someone take a look at this <{PR URL}|PR>? :pray:
+   > Hi {team}, could someone take a look at this <{PR URL}|PR>? :pray:
 
    Mention the requested reviewers only if the team's channel does that. No Slack tool? Give the user the message and the channel instead.
