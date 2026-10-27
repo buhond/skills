@@ -16,4 +16,4 @@ Only these survive:
 
 Everything else goes, including commented-out code and comments justifying a workaround: fix the workaround. Unsure whether one survives? It goes.
 
-Lint and type suppressions (`eslint-disable`, `@ts-ignore`, `@ts-expect-error`) count too. One survives only when its rule is style-only; one hiding a real bug is fixed at the cause.
+Lint and type suppressions (`eslint-disable`, `@ts-ignore`, `# noqa`, `# type: ignore`, `rubocop:disable`, `//nolint`) count too. One survives only when its rule is style-only; one hiding a real bug is fixed at the cause.

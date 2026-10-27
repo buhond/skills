@@ -10,18 +10,18 @@ One subagent per rule judges the diff. You fix the code. The user runs this to e
 
 ## Rules
 
-Each rule is a sibling skill: `../<rule>/SKILL.md` from this file. A rule runs when the diff changes a file its pattern matches.
+Each rule is a sibling skill: `../<rule>/SKILL.md` from this file. A rule runs when the diff changes the code it covers.
 
-| Rule | Files | Reasoning | Verify majors |
+| Rule | Covers | Reasoning | Verify majors |
 | --- | --- | --- | --- |
 | kiss | any | | yes |
 | folder-structure | any | | |
 | single-responsibility | any | | yes |
 | dry | any | | yes |
 | prior-art | any | | |
-| design-system | `.jsx` `.tsx` `.css` `.scss` | | |
-| state-ownership | `.jsx` `.tsx` | | |
-| type-safety | `.ts` `.tsx` | | |
+| design-system | UI: markup, styles, templates, components | | |
+| state-ownership | any | | |
+| type-safety | typed code, type hints included | | |
 | performance | any | high | yes |
 | correctness | any | high | |
 | security | any | high | |
@@ -31,7 +31,7 @@ Each rule is a sibling skill: `../<rule>/SKILL.md` from this file. A rule runs w
 
 ## Cycle
 
-1. **Scope.** Commit pending changes: reviewers read `git diff <base>...HEAD`, so uncommitted work is invisible to them. `<base>` is the pull request's base branch (`gh pr view --json baseRefName`, as `origin/<name>`), else `origin/main`. List the files with `git diff --name-only <base>...HEAD`.
+1. **Scope.** Commit pending changes: reviewers read `git diff <base>...HEAD`, so uncommitted work is invisible to them. `<base>` is the pull request's base branch from the repo's PR tool (e.g. `gh pr view --json baseRefName`, as `origin/<name>`), else the remote's default branch. List the files with `git diff --name-only <base>...HEAD`.
 2. **Intent.** Write one paragraph on what the change is for, from the pull request description, the commit messages and the code.
 3. **Review.** Start one read-only subagent per selected rule, all at once, each with `references/reviewer.md` filled in. Give rules marked high the highest reasoning setting the tool offers. No subagent tool? Say so and stop; never review the diff yourself in their place. A reviewer that dies, replies without the JSON, or replies `unavailable` leaves its rule unreviewed.
 4. **Verify.** For every blocker, and every major from a rule marked under Verify majors, start a fresh subagent with `references/verify.md` filled in. Drop what it refutes. One that dies leaves its finding unverified.
@@ -43,7 +43,7 @@ Each rule is a sibling skill: `../<rule>/SKILL.md` from this file. A rule runs w
    - it conflicts with the intent, or the code makes no sense under any intent you can infer. Leave it open, with what you recommend.
 7. **Fix** the applied findings and commit. Never push: whoever started the run decides that.
 
-Rerun from step 3 with the rules whose pattern matches a file the fixes touched, plus the unreviewed rules.
+Rerun from step 3 with the rules covering the code the fixes touched, plus the unreviewed rules.
 
 Reruns sample taste. A finding that reverses one you applied, or re-raises one you declined for a reason that still holds, is churn: keep your version. Stop once a run reviews every rule it was given and leaves nothing to apply, or at the cycle cap (`/tribunal 10`, default three).
 

@@ -1,11 +1,13 @@
 ---
 name: folder-structure
-description: Enforce this repo's front-end folder and file structure conventions. Use when creating or moving front-end files or components, organizing a feature folder, reviewing a front-end PR for structure, or when a user asks to audit, clean up, restructure, or fix a folder layout — even if they don't name this skill.
+description: Enforce one folder per export, named after it and nested by usage. Use when creating or moving files, components or modules, organizing a feature folder, reviewing a PR for structure, or when a user asks to audit, clean up, restructure, or fix a folder layout — even if they don't name this skill.
 ---
 
 # Folder Structure
 
-Every exported component, hook, or utility gets its own kebab-case folder, named after what it exports, with a same-named main file and colocated test.
+Every exported unit — component, class, hook, module or utility — gets its own folder, named after what it exports, with a same-named main file and its test beside it. Names follow the language's file convention: kebab-case in JavaScript and TypeScript, snake_case in Python, Ruby and Rust.
+
+In TypeScript:
 
 **Bad:**
 
@@ -44,7 +46,7 @@ fruit-list
     └── fruit-item.spec.tsx
 ```
 
-**File names must match the export**, in kebab-case:
+**File names must match the export:**
 
 ```
 Bad:  Loader/ProgressBar.tsx  (exports ProgressBar)
@@ -57,4 +59,4 @@ Renaming an export? Rename its file/folder in the same change.
 
 **When auditing or restructuring an existing folder:** before moving a file, grep for every import of it — moving it changes its relative import path everywhere. Move one export's files as a unit, fix imports, then move the next.
 
-**Exceptions:** if a framework forces a flat directory (e.g. Next.js `pages/`), don't fight it — just note why.
+**Exceptions:** where the language or framework fixes the layout — Go packages, Java packages, Next.js `pages/`, tests kept in a separate tree like Python's `tests/` or Java's `src/test` — follow it and note why.
