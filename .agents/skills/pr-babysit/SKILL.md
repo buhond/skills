@@ -30,8 +30,8 @@ Find the PR once and check it now. Then, if the harness can deliver the PR's eve
 3. **CI**: read the failing logs, fix the root cause, push. Retry a flaky, unrelated failure once; if it fails again, tell the user. Never skip or loosen a check.
 4. **Review comments** (inline, review bodies, top-level, bots) whose latest reply isn't yours:
    - Makes sense: fix it, push, reply with the commit SHA, then resolve the thread.
-   - Doesn't: reply with a short, polite reason and leave the thread for the reviewer.
-   - Needs the user's call: ask them once, in one line with your recommendation, and skip it until they answer.
+   - Doesn't: reply with a short, polite reason. Resolve the thread when the reviewer is a bot; leave it for a person.
+   - Unsure: follow the `decide` skill, act on your recommendation, and say what you chose in the reply. Ask the user only when the choice is genuinely theirs: once, in one line with your recommendation, and skip it until they answer.
 
    Once you've addressed a review, re-request it from that reviewer.
 5. **Ready** (approved, green, no conflicts, every thread answered): merge with `merge`; otherwise tell the user once and keep checking. Still a draft once green: mark it ready with `ready`; otherwise ask the user whether to.
