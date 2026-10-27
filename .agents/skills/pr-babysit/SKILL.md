@@ -1,7 +1,7 @@
 ---
 name: pr-babysit
 description: 'Watch an open pull request and keep it green until it merges: fix failing CI, resolve merge conflicts, and fix, reply to and resolve review comments. Use right after opening a PR, or when asked to babysit, watch, shepherd, or "get this PR merged".'
-argument-hint: '[PR number or URL, default: current branch] [interval, default 10m]'
+argument-hint: '[PR number or URL, default: current branch] [interval, default 10m] [once] [ready] [merge]'
 ---
 
 # PR Babysit
@@ -11,6 +11,14 @@ Once a PR is open, own it until it merges or closes.
 ## Tooling
 
 Use the PR tool the repo's docs or skills name (e.g. Delta at Shopify, Graphite `gt`); read its `--help` instead of guessing. Otherwise use MCP or tool gateway tools, then the host's CLI (`gh`). If the tool handles push, sync, or merge, go through it.
+
+## Options
+
+- `once`: run one check and stop. No watching; whoever called you decides when the next check runs.
+- `ready`: mark a draft ready for review once it is green.
+- `merge`: merge once it is ready (step 5).
+
+Without `ready` or `merge`, do neither unless the user asks in the conversation.
 
 ## Watching
 
@@ -27,7 +35,7 @@ Find the PR once and check it now. Then, if the harness can deliver the PR's eve
    - Needs the user's call: ask them once, in one line with your recommendation, and skip it until they answer.
 
    Once you've addressed a review, re-request it from that reviewer.
-5. **Ready** (approved, green, no conflicts, every thread answered): merge only if the user asked; otherwise tell them once and keep checking. Still a draft once green: ask the user whether to mark it ready.
+5. **Ready** (approved, green, no conflicts, every thread answered): merge with `merge`; otherwise tell the user once and keep checking. Still a draft once green: mark it ready with `ready`; otherwise ask the user whether to.
 
 ## Guardrails
 
