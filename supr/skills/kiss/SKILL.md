@@ -22,3 +22,9 @@ Produce the minimum needed for the task — code, documentation, configuration, 
   if (foo) return <FooComponent />
   return <Default />
   ```
+
+## Reviewing code
+
+Start with the whole: does this behavior need this many files and moving parts? Then in each unit, find every line, branch, parameter and layer that could go with behavior unchanged. If nothing breaks when it goes, it is a finding — a wrapper whose single caller is its only reason to exist is such a layer, and inlining it is the fix.
+
+Generality that keeps a unit free of its callers is not that layer: narrowing it to today's one caller buys lines with coupling, and is the worse defect.

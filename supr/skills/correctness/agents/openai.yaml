@@ -1,0 +1,3 @@
+interface:
+  display_name: "Correctness"
+  short_description: "Make the code do what its callers expect on every input"

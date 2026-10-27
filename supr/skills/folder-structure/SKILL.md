@@ -53,6 +53,8 @@ Good: progress-bar/progress-bar.tsx  (exports ProgressBar)
 
 Renaming an export? Rename its file/folder in the same change.
 
+**When reviewing a diff:** check every file it adds, renames or moves.
+
 **When auditing or restructuring an existing folder:** before moving a file, grep for every import of it — moving it changes its relative import path everywhere. Move one export's files as a unit, fix imports, then move the next.
 
 **Exceptions:** if a framework forces a flat directory (e.g. Next.js `pages/`), don't fight it — just note why.

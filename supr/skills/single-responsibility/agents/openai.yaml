@@ -1,0 +1,3 @@
+interface:
+  display_name: "Single Responsibility"
+  short_description: "One unit, one job"

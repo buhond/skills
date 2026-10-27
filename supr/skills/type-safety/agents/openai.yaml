@@ -1,0 +1,3 @@
+interface:
+  display_name: "Type Safety"
+  short_description: "Make invalid states impossible to write"

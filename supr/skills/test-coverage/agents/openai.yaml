@@ -1,0 +1,3 @@
+interface:
+  display_name: "Test Coverage"
+  short_description: "Test changed behavior, not implementation"
