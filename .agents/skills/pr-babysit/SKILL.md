@@ -1,7 +1,7 @@
 ---
 name: pr-babysit
 description: 'Watch an open pull request and keep it green until it merges: fix failing CI, resolve merge conflicts, and fix, reply to and resolve review comments. Use right after opening a PR, or when asked to babysit, watch, shepherd, or "get this PR merged".'
-argument-hint: '[PR number or URL, default: current branch] [interval, default 10m] [once] [ready] [merge]'
+argument-hint: '[PR number or URL, default: current branch] [interval, default 10m] [ready] [merge]'
 ---
 
 # PR Babysit
@@ -14,7 +14,6 @@ Use the PR tool the repo's docs or skills name (e.g. Delta at Shopify, Graphite 
 
 ## Options
 
-- `once`: run one check and stop. No watching; whoever called you decides when the next check runs.
 - `ready`: mark a draft ready for review once it is green.
 - `merge`: merge once it is ready (step 5).
 
