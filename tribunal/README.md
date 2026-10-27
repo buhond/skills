@@ -6,15 +6,38 @@ Code quality rules, one skill each, and `tribunal`: one subagent per rule review
 
 Claude Code:
 
-```
-/plugin marketplace add buhond/skills
-/plugin install tribunal@buhond
+```sh
+claude plugin marketplace add buhond/skills && claude plugin install tribunal@buhond
 ```
 
 Cursor: add `buhond/skills` as a plugin marketplace and install `tribunal`.
 
 ## Use
 
-`/tribunal` on a branch, or `/tribunal 5` to allow five cycles instead of three. It commits its fixes and never pushes.
+`/tribunal:tribunal` on a branch, or `/tribunal:tribunal 5` to allow five cycles instead of three. It commits its fixes and never pushes.
 
-Every other skill in [`skills/`](skills) is a rule, and applies while writing code too.
+Every other skill in [`skills/`](skills) is a rule, and applies while writing code too, e.g. `/tribunal:kiss`.
+
+## How it works
+
+```mermaid
+flowchart LR
+  S[Scope + intent] --> R[One reviewer per rule, in parallel]
+  R --> V[Verify blockers + key majors]
+  V --> G[Group by root cause]
+  G --> D{Apply?}
+  D -->|yes| F[Fix + commit]
+  D -->|no| O[Declined or open]
+  F --> L{Nothing left or cycle cap?}
+  L -->|no| R
+  L -->|yes| P[Verdict + report]
+```
+
+1. **Scope:** diffs the branch against the PR's base branch, or the remote's default branch, and writes one paragraph on what the change is for.
+2. **Review:** one read-only subagent per rule replies with its findings.
+3. **Verify:** a fresh subagent tries to refute each blocker, and each major from kiss, dry, single-responsibility and performance.
+4. **Group:** findings one fix would resolve are merged.
+5. **Decide and fix:** it applies a finding unless it's a hypothetical no real caller hits, an abstraction nothing needs yet, pure taste, or against the change's intent.
+6. **Loop:** it reruns until a cycle leaves nothing to apply, and never reverses a fix it already made.
+
+It **fails** if the last cycle left a blocker unapplied, a rule unreviewed or a finding unverified.
