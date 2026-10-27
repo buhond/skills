@@ -1,4 +1,4 @@
 interface:
   display_name: "Request Reviewers"
-  short_description: "Request the owners of the touched code as PR reviewers, never the author."
+  short_description: "Request the owners of the touched code as PR reviewers, and ask their team on Slack."
   default_prompt: "Use $request-reviewers to request reviewers for this PR."
