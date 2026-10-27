@@ -1,3 +1,3 @@
 interface:
   display_name: "Prior Art"
-  short_description: "Search before writing anything new: reuse the language, framework, dependencies and repo helpers, and follow the repo's existing shape"
+  short_description: "Reuse what the language, dependencies and repo already do"

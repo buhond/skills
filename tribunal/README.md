@@ -17,4 +17,4 @@ Cursor: add `buhond/skills` as a plugin marketplace and install `tribunal`.
 
 `/tribunal` on a branch, or `/tribunal 5` to allow five cycles instead of three. It commits its fixes and never pushes.
 
-The rules also apply while writing code: `kiss`, `folder-structure`, `single-responsibility`, `dry`, `prior-art`, `design-system`, `state-ownership`, `type-safety`, `performance`, `correctness`, `security`, `clarity`, `no-comments`, `test-coverage`.
+Every other skill in [`skills/`](skills) is a rule, and applies while writing code too.

@@ -1,3 +1,3 @@
 interface:
   display_name: "State Ownership"
-  short_description: "Give every piece of UI state one owner and one source"
+  short_description: "Give every piece of state one owner and one source"

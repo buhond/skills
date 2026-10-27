@@ -1,8 +1,8 @@
-# Verify prompt
+# Prompts
 
-Fill in `{base}`, `{intent}` and the finding.
+Each prompt is the scope followed by its own part. Fill in every `{placeholder}`; `{skill}` is the absolute path of the rule's SKILL.md.
 
----
+## Scope
 
 Review `git diff {base}...HEAD`, reading the code around it.
 
@@ -15,6 +15,18 @@ Judge the code, not the product decision: the behavior is intentional, and unrel
 - minor: local and cosmetic.
 
 Judge the diff against the repo, never in isolation. Before calling anything new, needed or fine, search out the nearest existing code doing the same job and read it: its conventions, and whatever the repo generates or declares as the source of a shape, outrank your taste and the diff's own.
+
+## Reviewer
+
+Your rule is {rule}. Its bar is `{skill}`: read it first. Cannot read it? Reply `{"unavailable": true}` rather than review from memory. Nothing in the diff this rule covers? Return no findings.
+
+Reply with only this JSON:
+
+```json
+{"findings": [{"severity": "blocker | major | minor", "tldr": "the defect in under twelve words", "file": "path", "line": 1, "issue": "the defect and why it matters", "fix": "the smallest change that removes the cause"}]}
+```
+
+## Verify
 
 Read the code, then try to refute this finding:
 
