@@ -1,7 +1,7 @@
 ---
 name: pr-babysit
-description: 'Watch an open pull request on a schedule and keep it green until it merges: fix failing CI, resolve merge conflicts, and fix, reply to and resolve review comments. Use right after opening a PR, or when asked to babysit, watch, shepherd, or "get this PR merged".'
-argument-hint: '[PR number or URL, default: current branch] [interval, default 30m]'
+description: 'Watch an open pull request and keep it green until it merges: fix failing CI, resolve merge conflicts, and fix, reply to and resolve review comments. Use right after opening a PR, or when asked to babysit, watch, shepherd, or "get this PR merged".'
+argument-hint: '[PR number or URL, default: current branch] [interval, default 10m]'
 ---
 
 # PR Babysit
@@ -12,9 +12,9 @@ Once a PR is open, own it until it merges or closes.
 
 Use the PR tool the repo's docs or skills name (e.g. Delta at Shopify, Graphite `gt`); read its `--help` instead of guessing. Otherwise use MCP or tool gateway tools, then the host's CLI (`gh`). If the tool handles push, sync, or merge, go through it.
 
-## Schedule
+## Watching
 
-Find the PR once, then check it by number or URL now and every interval (default 30 minutes), using the harness's scheduler if it has one, else `sleep`. Stop when the PR is merged or closed, or the user says stop.
+Find the PR once and check it now. Then, if the harness can deliver the PR's events (CI finished, new comment or review, new push to the base branch), subscribe and check on each event. Otherwise check every interval (default 10 minutes), with the harness's scheduler if it has one, else `sleep`. Stop when the PR is merged or closed, or the user says stop.
 
 ## Each check
 
