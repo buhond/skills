@@ -9,6 +9,6 @@ argument-hint: '[PR number or URL, default: current branch]'
 Request one or two reviewers who own the code the PR touches.
 
 1. Skip a draft, and a PR that already has reviewers.
-2. Find the owners of the touched files: the ownership tool the repo's docs or skills name, else `CODEOWNERS`, else the most recent authors of those files (`git log --format='%an %ae' -- <files>`).
-3. Prefer whoever owns the most of the diff. Never the author.
+2. Find the owners of the touched files: the ownership tool the repo's docs or skills name, else `CODEOWNERS`, else the most recent authors of those files, by their host login (e.g. `gh api 'repos/{owner}/{repo}/commits?path=<file>' --jq '.[].author.login'`).
+3. Prefer whoever owns the most of the diff. Never the author, never a bot.
 4. Request them with the repo's PR tool, else `gh pr edit --add-reviewer`.
