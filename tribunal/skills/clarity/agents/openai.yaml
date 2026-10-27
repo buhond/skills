@@ -1,3 +1,3 @@
 interface:
   display_name: "Clarity"
-  short_description: "Make code read top to bottom once"
+  short_description: "Make code read top to bottom, once"

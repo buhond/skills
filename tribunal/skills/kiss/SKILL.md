@@ -25,6 +25,7 @@ Produce the minimum needed for the task — code, documentation, configuration, 
 
 ## Reviewing code
 
-Start with the whole: does this behavior need this many files and moving parts? Then in each unit, find every line, branch, parameter and layer that could go with behavior unchanged. If nothing breaks when it goes, it is a finding — a wrapper whose single caller is its only reason to exist is such a layer, and inlining it is the fix.
-
-Generality that keeps a unit free of its callers is not that layer: narrowing it to today's one caller buys lines with coupling, and is the worse defect.
+- First the whole change: could it work with fewer files, layers or moving parts?
+- Then each line, branch, parameter and layer: if removing it changes nothing, it is a finding.
+- A wrapper with one caller and nothing of its own is such a layer. Inline it.
+- Don't strip generality that keeps a unit unaware of who calls it. Tying it to its one caller saves lines but couples them, and that is worse.

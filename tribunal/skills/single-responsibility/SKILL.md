@@ -1,11 +1,13 @@
 ---
 name: single-responsibility
-description: "One unit, one job. Apply when writing, splitting or reviewing functions, components, hooks or modules — especially ones that fetch, transform and render, or grow flags and options for one caller."
+description: "One unit, one job. Apply when writing, splitting or reviewing functions, components, classes or modules, and the direction of their imports."
 ---
 
 # Single Responsibility
 
-One unit, one job.
+One unit, one job, one reason to change.
 
-- Flag units doing several: a component that fetches, transforms and renders; a function mixing orchestration with the mechanics it orchestrates; anything untestable without standing up its dependencies. Split it along its jobs.
-- Serving one caller is a job the unit took from that caller. Every flag, mode, option, branch, name or import it grew for one caller — every boolean parameter that picks behavior included — goes back to that caller, to assemble from smaller pieces.
+- **Flag units doing several jobs:** a component that fetches, transforms and renders; a function that decides and also does the I/O; anything you can't test without starting its dependencies. Split along the jobs.
+- **Keep the core pure.** Business rules take data and return data. I/O, frameworks and side effects sit at the edge and call in. Flag business logic that imports the database, an HTTP client or the framework.
+- **Imports point one way:** from the edge in, from features to shared code. Flag shared code importing a feature, and import cycles.
+- **Flag flags, modes and boolean parameters added for one caller.** Give the caller smaller pieces to combine instead.

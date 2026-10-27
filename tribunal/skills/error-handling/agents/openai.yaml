@@ -1,0 +1,3 @@
+interface:
+  display_name: "Error Handling"
+  short_description: "Check input once at the edge, fail loudly inside"

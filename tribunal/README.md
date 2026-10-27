@@ -35,7 +35,7 @@ flowchart LR
 
 1. **Scope:** diffs the branch against the PR's base branch, or the remote's default branch, and writes one paragraph on what the change is for.
 2. **Review:** one read-only subagent per rule replies with its findings.
-3. **Verify:** a fresh subagent tries to refute each blocker, and each major from kiss, dry, single-responsibility and performance.
+3. **Verify:** a fresh subagent tries to refute each blocker, and each major from kiss, no-slop, dry, single-responsibility and performance.
 4. **Group:** findings one fix would resolve are merged.
 5. **Decide and fix:** it applies a finding unless it's a hypothetical no real caller hits, an abstraction nothing needs yet, pure taste, or against the change's intent.
 6. **Loop:** it reruns until a cycle leaves nothing to apply, and never reverses a fix it already made.
