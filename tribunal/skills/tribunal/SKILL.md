@@ -27,7 +27,7 @@ Every rule runs on every diff, except `design-system`, which needs UI code, and 
 6. **Decide** every finding yourself. Apply it unless:
    - its input can't happen: check the real callers before trusting a "what if";
    - it adds an abstraction nothing needs yet;
-   - it is taste: a different way, with no real problem shown in this one;
+   - it is taste: a different way, with no real problem shown in this one. Other code doing the same is no reason to decline when the finding's rule says the repo's habit doesn't count;
    - it goes against the intent, or the code makes no sense under any intent you can guess. Leave it open, with what you recommend.
 7. **Fix** the applied findings and commit. Never push: whoever started the run decides that.
 
