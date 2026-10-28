@@ -14,7 +14,7 @@ Use the PR tool the repo's docs or skills name (e.g. Delta at Shopify, Graphite 
 
 ## Options
 
-- `ready`: mark a draft ready for review once it is green.
+- `ready`: mark a draft ready for review only once its work is done: CI passed, no conflicts, every review thread answered and nothing else still pushing to the branch (another agent, such as a tribunal run).
 - `merge`: merge once it is ready (step 5).
 
 Without `ready` or `merge`, do neither unless the user asks in the conversation.
@@ -34,7 +34,7 @@ Find the PR once and check it now. Then, if the harness can deliver the PR's eve
    - Unsure: follow the `decide` skill, act on your recommendation, and say what you chose in the reply. Ask the user only when the choice is genuinely theirs: once, in one line with your recommendation, and skip it until they answer.
 
    Once you've addressed a review, re-request it from that reviewer.
-5. **Ready** (approved, green, no conflicts, every thread answered): merge with `merge`; otherwise tell the user once and keep checking. Still a draft once green: mark it ready with `ready`; otherwise ask the user whether to.
+5. **Ready** (approved, green, no conflicts, every thread answered): merge with `merge`; otherwise tell the user once and keep checking. Still a draft once its work is done (CI passed, no conflicts, every thread answered, nothing else still pushing to the branch, such as a tribunal run): mark it ready with `ready`; otherwise ask the user whether to.
 
 ## Guardrails
 
