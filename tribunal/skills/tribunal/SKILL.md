@@ -14,7 +14,7 @@ Each rule is a sibling skill, `../<rule>/SKILL.md` from this file: kiss, no-slop
 
 Every rule runs on every diff, except `design-system`, which needs UI code, and `type-safety`, which needs typed code.
 
-- **High reasoning:** correctness, security, performance.
+- **Strongest model, highest reasoning:** correctness, security, performance. The other rules run on a smaller, faster model when one is available.
 - **Verify majors:** kiss, no-slop, dry, single-responsibility, performance.
 
 ## Cycle
@@ -31,7 +31,7 @@ Every rule runs on every diff, except `design-system`, which needs UI code, and 
    - it goes against the intent, or the code makes no sense under any intent you can guess. Leave it open, with what you recommend.
 7. **Fix** the applied findings and commit. Never push: whoever started the run decides that.
 
-Then run again from step 3. Each new run may suggest undoing your work: when a finding reverses a fix you made, or repeats one you declined for a reason that still holds, keep your version. Stop when a run reviews every rule and finds nothing to fix, or at the cycle cap: the skill's argument, default three.
+Then run again from step 3, on the fix alone: `{range}` becomes `<head before the fix>..HEAD`. Each new run may suggest undoing your work: when a finding reverses a fix you made, or repeats one you declined for a reason that still holds, keep your version. Stop when a run reviews every rule and finds nothing to fix, or at the cycle cap: the skill's argument, default three.
 
 ## Verdict
 
