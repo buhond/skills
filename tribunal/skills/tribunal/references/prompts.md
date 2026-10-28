@@ -1,10 +1,10 @@
 # Prompts
 
-Each prompt is the Scope part followed by its own part. Fill in every `{placeholder}`. `{skill}` is the absolute path of the rule's SKILL.md.
+Each prompt is the Scope part followed by its own part. Fill in every `{placeholder}`. `{range}` is `{base}...HEAD` on the first run. `{skill}` is the absolute path of the rule's SKILL.md.
 
 ## Scope
 
-Review `git diff {base}...HEAD`, and read the code around it.
+Review `git diff {range}`, and read the code around it.
 
 The change is for: {intent}
 
@@ -22,7 +22,7 @@ Compare with the repo, not with your taste. Before calling anything new, needed 
 
 ## Reviewer
 
-Your rule is {rule}. Read `{skill}` first: it is your bar. Can't read it? Reply `{"unavailable": true}` instead of reviewing from memory. Nothing in the diff for this rule? Reply with no findings. Don't pad the list: a few real problems beat many nits.
+Your rule is {rule}. Read `{skill}` first: it is your bar. Can't read it? Reply `{"unavailable": true}` instead of reviewing from memory. Nothing in the diff for this rule? Reply with no findings. Report every problem you suspect, even when unsure: others verify and decide.
 
 Reply with only this JSON:
 
