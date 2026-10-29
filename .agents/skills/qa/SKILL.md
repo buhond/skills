@@ -41,7 +41,11 @@ On a pass:
 
 1. Pick from the passing round's screenshots: each state the change adds or alters, and each step of an interaction, in order. Add one from the base branch only when the new one alone doesn't show the difference. A change with no UI gets its commands and their output instead.
 2. Check each shows what its caption says, with no error, secret or real personal data. Retake any that don't.
-3. Host them where the repo's docs say. Otherwise, on GitHub, commit them under `<PR number>/` on the orphan branch `qa-evidence`, from a separate worktree (never the PR's checkout), with `[skip ci]` in the message, and push (rejected, rebase and push again). Link each as `https://github.com/<owner>/<repo>/raw/<SHA of that commit>/<PR number>/<file>.png`, so a later run can't change it. Can't push there? List their paths in your report instead.
-4. In the PR body, replace any `## QA` section and keep the rest: the commit you tested, what you tested in a few bullets, then each screenshot as `![<caption>](<url>)`.
+3. Host them where the repo's docs say. Otherwise, by the host of the `origin` remote, which also gives `<owner>` and `<repo>`:
+   - **Delta**, if `dt auth status` reports you logged in to that host: upload each with `curl -fsS -X POST -H "Authorization: Bearer $(dt auth token)" -H "Content-Type: image/png" --data-binary @<path> "https://<origin host>/<owner>/<repo>/api/assets?name=<PR number>-<short SHA tested>-<slug>.png"`, where `<slug>` is letters, digits and dashes, and link the `url` it returns. Send the token only to that host.
+   - **GitHub**, if it is `github.com`: commit them under `<PR number>/` on the orphan branch `qa-evidence`, from a separate worktree (never the PR's checkout), with `[skip ci]` in the message, and push (rejected, rebase and push again). Link each as `https://github.com/<owner>/<repo>/raw/<SHA of that commit>/<PR number>/<file>.png`, so a later run can't change it.
+
+   A screenshot you can't host (any other host, a failed upload or push, a response with no `url`) stays out of the PR body: list its path in your report instead.
+4. Fetch the current PR body. Delete the `## QA` section an earlier run added: the `---` directly above it, if any, its heading, its commit line, bullets and screenshots. Keep everything else, including screenshots others added. Then end the body with a blank line, `---` and a `## QA` section: the commit you tested, what you tested in a few bullets, then each hosted screenshot as `![<caption>](<url>)`.
 
 Stop the processes you started. End with the verdict, what you tested, the bugs you fixed with their commits, and what's left.
