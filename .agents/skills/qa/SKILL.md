@@ -41,11 +41,11 @@ On a pass:
 
 1. Pick from the passing round's screenshots: each state the change adds or alters, and each step of an interaction, in order. Add one from the base branch only when the new one alone doesn't show the difference. A change with no UI gets its commands and their output instead.
 2. Check each shows what its caption says, with no error, secret or real personal data. Retake any that don't.
-3. Host them where the repo's docs say. Otherwise, on the forge of the `origin` remote:
-   - **Delta**: upload each with `curl -fsS -X POST -H "Authorization: Bearer $(dt auth token)" -H "Content-Type: image/png" --data-binary @<path> "https://<origin host>/<owner>/<repo>/api/assets?name=<name>.png"`, where `<name>` is a short slug of letters, digits and dashes, and link the `url` it returns. Send the token to no other host.
-   - **GitHub**: commit them under `<PR number>/` on the orphan branch `qa-evidence`, from a separate worktree (never the PR's checkout), with `[skip ci]` in the message, and push (rejected, rebase and push again). Link each as `https://github.com/<owner>/<repo>/raw/<SHA of that commit>/<PR number>/<file>.png`, so a later run can't change it.
+3. Host them where the repo's docs say. Otherwise, by the host of the `origin` remote, which also gives `<owner>` and `<repo>`:
+   - **Delta**, if it is the host `dt auth status` verifies: upload each with `curl -fsS -X POST -H "Authorization: Bearer $(dt auth token)" -H "Content-Type: image/png" --data-binary @<path> "https://<origin host>/<owner>/<repo>/api/assets?name=<PR number>-<short SHA tested>-<slug>.png"`, where `<slug>` is letters, digits and dashes, and link the `url` it returns. Send the token only to that host.
+   - **GitHub**, if it is `github.com`: commit them under `<PR number>/` on the orphan branch `qa-evidence`, from a separate worktree (never the PR's checkout), with `[skip ci]` in the message, and push (rejected, rebase and push again). Link each as `https://github.com/<owner>/<repo>/raw/<SHA of that commit>/<PR number>/<file>.png`, so a later run can't change it.
 
-   A failed upload, or a response with no `url`, means that screenshot isn't hosted: list its path in your report instead.
-4. If an earlier run added a QA section, delete it: from its `---` rule to the end of the body. Keep everything before it, including screenshots others added. Then end the body with `---` and a `## QA` section: the commit you tested, what you tested in a few bullets, then each screenshot as `![<caption>](<url>)`.
+   A screenshot you can't host (any other host, a failed upload or push, a response with no `url`) stays out of the PR body: list its path in your report instead.
+4. Fetch the current PR body. Delete the `## QA` section an earlier run added, from its heading (and the `---` directly above it, if any) to the next `##` heading or the end of the body. Keep everything else, including screenshots others added. Then end the body with `---` and a `## QA` section: the commit you tested, what you tested in a few bullets, then each hosted screenshot as `![<caption>](<url>)`.
 
 Stop the processes you started. End with the verdict, what you tested, the bugs you fixed with their commits, and what's left.
