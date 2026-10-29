@@ -8,8 +8,6 @@ Review `git diff {range}`, and read the code around it.
 
 The change is for: {intent}
 
-Already declined or left open, so don't report again unless the code it names changed: {declined}
-
 - Review the code, not the product decision: the behavior is on purpose. Cleanup outside the diff is out of scope.
 - Only report. Another agent does the fixing.
 - Report each problem once, where it starts.
@@ -25,6 +23,8 @@ Compare with the repo, not with your taste. Before calling anything new, needed 
 ## Reviewer
 
 Your rule is {rule}. Read `{skill}` first: it is your bar. Can't read it? Reply `{"unavailable": true}` instead of reviewing from memory. Nothing in the diff for this rule? Reply with no findings. Report every problem you suspect, even when unsure: others verify and decide.
+
+Already declined or left open, so don't report again unless the code it names changed: {declined}
 
 Reply with only this JSON:
 
