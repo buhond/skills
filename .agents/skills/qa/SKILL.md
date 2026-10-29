@@ -41,11 +41,11 @@ On a pass:
 
 1. Pick from the passing round's screenshots: each state the change adds or alters, and each step of an interaction, in order. Add one from the base branch only when the new one alone doesn't show the difference. A change with no UI gets its commands and their output instead.
 2. Check each shows what its caption says, with no error, secret or real personal data. Retake any that don't.
-3. Host them where the repo's docs say. Otherwise:
-   - **Delta**: upload each with `curl -X POST -H "Authorization: Bearer $(dt auth token)" --data-binary @<file> "https://<host>/<owner>/<repo>/api/assets?name=<file>"` and link the `url` it returns.
+3. Host them where the repo's docs say. Otherwise, on the forge of the `origin` remote:
+   - **Delta**: upload each with `curl -fsS -X POST -H "Authorization: Bearer $(dt auth token)" -H "Content-Type: image/png" --data-binary @<path> "https://<origin host>/<owner>/<repo>/api/assets?name=<name>.png"`, where `<name>` is a short slug of letters, digits and dashes, and link the `url` it returns. Send the token to no other host.
    - **GitHub**: commit them under `<PR number>/` on the orphan branch `qa-evidence`, from a separate worktree (never the PR's checkout), with `[skip ci]` in the message, and push (rejected, rebase and push again). Link each as `https://github.com/<owner>/<repo>/raw/<SHA of that commit>/<PR number>/<file>.png`, so a later run can't change it.
 
-   Can't upload? List their paths in your report instead.
-4. End the PR body with `---` and a `## QA` section, replacing the one an earlier run added and keeping everything else, including any screenshots already there: the commit you tested, what you tested in a few bullets, then each screenshot as `![<caption>](<url>)`.
+   A failed upload, or a response with no `url`, means that screenshot isn't hosted: list its path in your report instead.
+4. If an earlier run added a QA section, delete it: from its `---` rule to the end of the body. Keep everything before it, including screenshots others added. Then end the body with `---` and a `## QA` section: the commit you tested, what you tested in a few bullets, then each screenshot as `![<caption>](<url>)`.
 
 Stop the processes you started. End with the verdict, what you tested, the bugs you fixed with their commits, and what's left.
