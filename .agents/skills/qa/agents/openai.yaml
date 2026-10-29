@@ -1,0 +1,4 @@
+interface:
+  display_name: "QA"
+  short_description: "Test a PR in the running app, fix what's broken, and add screenshots to the PR."
+  default_prompt: "Use $qa to QA this PR."
