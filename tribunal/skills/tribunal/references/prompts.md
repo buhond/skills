@@ -1,6 +1,6 @@
 # Prompts
 
-Each prompt is the Scope part followed by its own part. Fill in every `{placeholder}`. `{range}` is `{base}...HEAD` on every run. `{declined}` lists the findings earlier runs declined, with why, or `none`. `{skill}` is the absolute path of the rule's SKILL.md.
+Each prompt is the Scope part followed by its own part. Fill in every `{placeholder}`. `{range}` is `{base}...HEAD` on every run. `{declined}` lists the findings earlier runs declined or left open, with why, or `none`. `{skill}` is the absolute path of the rule's SKILL.md.
 
 ## Scope
 
@@ -8,7 +8,7 @@ Review `git diff {range}`, and read the code around it.
 
 The change is for: {intent}
 
-Already declined, so don't report again unless the code it names changed: {declined}
+Already declined or left open, so don't report again unless the code it names changed: {declined}
 
 - Review the code, not the product decision: the behavior is on purpose. Cleanup outside the diff is out of scope.
 - Only report. Another agent does the fixing.

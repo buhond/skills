@@ -22,7 +22,7 @@ Every rule runs on every diff, except `design-system`, which needs UI code, and 
 
 1. **Scope.** Commit pending changes: reviewers read `git diff <base>...HEAD` and can't see uncommitted work. `<base>` is the pull request's base branch from the repo's PR tool (e.g. `gh pr view --json baseRefName`, as `origin/<name>`), else the remote's default branch. Fetch it first.
 2. **Intent.** Write one paragraph on what the change is for, from the PR description, the commit messages and the code.
-3. **Review.** Start one read-only subagent per rule, all at once, on its tier, each given the Scope and Reviewer parts of `references/prompts.md`. No subagent tool? Say so and stop. Never review the diff yourself instead. A reviewer that dies, replies without the JSON, or replies `unavailable` leaves its rule unreviewed.
+3. **Review.** Start one subagent per rule, all at once, on its tier, each given the Scope and Reviewer parts of `references/prompts.md`. No subagent tool? Say so and stop. Never review the diff yourself instead. A reviewer that dies, replies without the JSON, or replies `unavailable` leaves its rule unreviewed.
 4. **Verify.** For every blocker, and every major from a verify-majors rule, start a fresh strong-tier subagent with the Scope and Verify parts as soon as that reviewer replies; don't wait for the others. Never verify on the fast tier, whatever the rule's tier. Drop the findings it refutes. One that dies leaves its finding unverified.
 5. **Group.** Merge findings that one fix would solve together. Sharing a file or a topic is not enough. Keep the most severe as the main one.
 6. **Decide** every finding yourself. Apply it unless:
@@ -32,7 +32,7 @@ Every rule runs on every diff, except `design-system`, which needs UI code, and 
    - it goes against the intent, or the code makes no sense under any intent you can guess. Leave it open, with what you recommend.
 7. **Fix** the applied findings. Give each group of findings whose files no other group touches its own subagent, all at once; fix the rest yourself. Then run the repo's tests and type check once, fix what broke, and commit. Never push: whoever started the run decides that.
 
-Then run again from step 3 on the whole `<base>...HEAD`, not just the fix, so a later run catches what an earlier one missed. Give its subagents every finding declined so far as `{declined}`. Each new run may suggest undoing your work: when a finding reverses a fix you made, or repeats one you declined for a reason that still holds, keep your version. Stop when a run reviews every rule and finds no blocker or major to apply: fix its minors and stop without another run. Otherwise stop at the cycle cap: the skill's argument, default three.
+Then run again from step 3 on the whole `<base>...HEAD`, not just the fix, so a later run catches what an earlier one missed. Give its subagents every finding declined or left open so far as `{declined}`. Each new run may suggest undoing your work: when a finding reverses a fix you made, or repeats one you declined for a reason that still holds, keep your version. Stop when a run reviews every rule and finds no blocker or major to apply: fix its minors and stop without another run. Otherwise stop at the cycle cap: the skill's argument, default three.
 
 ## Verdict
 
