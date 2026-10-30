@@ -16,11 +16,12 @@ Create an issue for the change, then publish the matching PR through the reposit
    - Check for an existing issue or PR for the same change and reuse it.
    - Use the repository's existing issue system and key format when clear; otherwise create a GitHub Issue.
    - In the issue, clearly describe what we're trying to achieve and why — the goal, not the implementation.
-   - Assign the issue to the user.
+   - Assign the issue to the user who asked for the work (the thread's owner).
 3. Publish the PR.
    - Stage only the scoped files by path (never `git add -A` or `git add .`); leave pre-existing local modifications uncommitted.
    - Start the PR title with the issue key. For GitHub, use `#<issue number> - <title>`.
    - In the PR description, clearly describe the technical approach — how the change achieves what the issue asks for.
+   - Assign the PR to the thread's owner, never to the PR's author, a bot or someone else named in the request.
 
 ## Pull request size
 
