@@ -15,4 +15,6 @@ Find the why yourself — the linked issue, the conversation, `git log`. Don't a
 
 Only claim what you verified.
 
+When you open the PR, assign it to the thread's owner — the user who asked for the work — not the commit author, a bot, or someone else named in the request. If you can't tell who that is, find their login, or assign them, leave it unassigned and say so in your reply.
+
 Update an existing PR with `gh pr edit --body-file`.
