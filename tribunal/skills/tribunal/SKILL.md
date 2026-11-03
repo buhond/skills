@@ -17,7 +17,7 @@ Every rule runs on every diff, except `design-system`, which needs UI code, and 
 - **Strong tier:** correctness, security, performance. Use your strongest subagent you can pick, at the highest reasoning setting available (in omp, `task` at high reasoning), never a fast or cheap one.
 - **Fast tier:** every other rule. Use a fast, cheap, read-only subagent (in omp, `scout`), else the default one.
 - **Verify majors:** kiss, no-slop, dry, single-responsibility, performance.
-- **No subagent tool?** Use anything else that runs work in separate sessions, such as a dynamic workflow. If nothing like that exists, do each subagent's job yourself, one at a time, each from its own prompt in `references/prompts.md`.
+- **No subagent tool?** Run reviewers and verifiers with anything else that starts separate sessions, such as a dynamic workflow; if those sessions can't see your checkout, put the diff in each prompt. Make every fix yourself. If nothing like that exists, do each subagent's job yourself, one at a time, each from its own prompt in `references/prompts.md`.
 
 ## Cycle
 
