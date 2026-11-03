@@ -33,7 +33,9 @@ Each round retests the whole list: a fix can break what passed.
 ## Verdict
 
 - **Pass**: a round found no bug, every item was tested, and the PR's head is still the commit you tested (`git fetch`; moved, run another round if you have one left).
-- **Fail**: round 3 still found a bug or ended on a commit that is no longer the head, or an item couldn't be tested (the app won't start, no automation tool, an account you can't create). Say which, and what it takes.
+- **Fail**: round 3 still found a bug or ended on a commit that is no longer the head, or an item still couldn't be tested after you tried every way around it. Say which, what you tried, and what it takes.
+
+Something in the way (the app won't start, no automation tool, an account or data you can't create)? It's not a fail yet: read the error and fix the setup, try another way to run the app, another tool, or another way to create what's missing. The goal is a pass, so give up only once nothing is left to try.
 
 ## Screenshots
 

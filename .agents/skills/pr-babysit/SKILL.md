@@ -39,4 +39,4 @@ Find the PR once and check it now. Then, if the harness can deliver the PR's eve
 ## Guardrails
 
 - Push only to the PR's branch, only changes in its scope, and never with plain `--force`.
-- If a fix you tried still fails three checks later, stop and tell the user what you tried. Waiting on CI, reviewers, or the user isn't a blocker.
+- A fix that still fails three checks later: try a different one. Stop and tell the user what you tried only once you're out of ideas. Waiting on CI, reviewers, or the user isn't a blocker.

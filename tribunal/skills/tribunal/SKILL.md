@@ -23,8 +23,8 @@ Every rule runs on every diff, except `design-system`, which needs UI code, and 
 
 1. **Scope.** Commit pending changes: reviewers read `git diff <base>...HEAD` and can't see uncommitted work. `<base>` is the pull request's base branch from the repo's PR tool (e.g. `gh pr view --json baseRefName`, as `origin/<name>`), else the remote's default branch. Fetch it first.
 2. **Intent.** Write one paragraph on what the change is for, from the PR description, the commit messages and the code.
-3. **Review.** Start one subagent per rule, all at once, on its tier, each given the Scope and Reviewer parts of `references/prompts.md`. A reviewer that dies, replies without the JSON, or replies `unavailable` leaves its rule unreviewed.
-4. **Verify.** For every blocker, and every major from a verify-majors rule, start a fresh strong-tier subagent with the Scope and Verify parts as soon as that reviewer replies; don't wait for the others. Never verify on the fast tier, whatever the rule's tier. Drop the findings it refutes. One that dies leaves its finding unverified.
+3. **Review.** Start one subagent per rule, all at once, on its tier, each given the Scope and Reviewer parts of `references/prompts.md`. A reviewer that dies, replies without the JSON, or replies `unavailable`: start it again; only one that fails again leaves its rule unreviewed.
+4. **Verify.** For every blocker, and every major from a verify-majors rule, start a fresh strong-tier subagent with the Scope and Verify parts as soon as that reviewer replies; don't wait for the others. Never verify on the fast tier, whatever the rule's tier. Drop the findings it refutes. One that dies: start it again; only one that dies again leaves its finding unverified.
 5. **Group.** Merge findings that one fix would solve together. Sharing a file or a topic is not enough. Keep the most severe as the main one.
 6. **Decide** every finding yourself. Apply it unless:
    - its input can't happen: check the real callers before trusting a "what if";
