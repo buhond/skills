@@ -21,9 +21,9 @@ Every rule runs on every diff, except `design-system`, which needs UI code, and 
 
 ## Ownership
 
-Find the open pull request: by branch when the branch has an upstream (e.g. `gh pr view --json number,author,assignees,headRefOid`), else by commit, the open one whose head is `HEAD` (e.g. `gh pr list --state open --search <sha>`), since a checked-out PR often has another local name. Use its number in every later PR tool call. You own it when you are its author or an assignee (against `gh api user --jq .login`), or the user said in the conversation to change it anyway. No pull request found, or you own it: run the Cycle as below. A lookup that fails means not yours, except one on a branch with no upstream, which counts as none found; name every failed lookup in your report.
+Find the open pull request: by branch when the branch has an upstream (e.g. `gh pr view --json number,state,author,assignees,headRefOid`; one that isn't open counts as none found), else by commit, the open one whose head is `HEAD` (e.g. `gh pr list --state open --search <sha>`), since a checked-out PR often has another local name. Use its number in every later PR tool call. You own it when you are its author or an assignee (against your login in the repo's PR tool, e.g. `gh api user --jq .login`), or the user said in the conversation to change it anyway. No pull request found, or you own it: run the Cycle as below. A lookup that fails means not yours, except a PR lookup on a branch with no upstream, which counts as none found; name every failed lookup in your report.
 
-Not yours? Review only: run the Cycle once without Decide and Fix, committing nothing (not even Scope's commit). Reviewers and verifiers read files, so run them in a separate worktree at the pull request's head commit (`HEAD` if the lookup failed), fetched first, never in the checkout. Then post one PR comment: the commit you reviewed, one table row per finding left after Group, most severe first, with its severity, tldr, rule, file, line and suggested fix, then any unreviewed rules and unverified findings, with no secret or real personal data. A security hole the base branch has too stays out of the comment; put it only in your report. Write the comment to a file outside the checkout and post it to that PR with the repo's PR tool (e.g. `gh pr comment <PR> --body-file`). Can't post it? Put the comment in your report instead. Report the verdict and the comment's URL in place of the Report's counts and table.
+Not yours? Review only: run the Cycle once without Decide and Fix, committing nothing (not even Scope's commit). Reviewers and verifiers read files, so run them in a separate worktree at the pull request's head commit (`HEAD` if the lookup failed), fetched first, never in the checkout. Then post one PR comment: the commit you reviewed, one table row per finding left after Group, most severe first, with its severity, tldr, rule, file, line and suggested fix, then any unreviewed rules and unverified findings, with no secret or real personal data. A security hole the base or default branch has too stays out of the comment; put it only in your report. Write the comment to a file outside the checkout and post it to that PR with the repo's PR tool (e.g. `gh pr comment <PR> --body-file`). Can't post it? Put the comment in your report instead. Report the verdict and the comment's URL in place of the Report's counts and table.
 
 ## Cycle
 
@@ -47,7 +47,7 @@ Then run again from step 3 on the whole `<base>...HEAD`, not just the fix, so a 
 
 ## Report
 
-One sentence, one table, then the open findings. Nothing else.
+One sentence, one table, then the open findings and what Ownership adds. Nothing else.
 
 > Verdict: **pass**. 5 applied, 2 declined, 1 open.
 >
