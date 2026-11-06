@@ -21,7 +21,9 @@ Nothing a user runs changed (only docs, tests or CI)? Say so and pass, with no s
 
 ## Ownership
 
-You own the pull request when you are its author or an assignee (`gh pr view --json author,assignees` against `gh api user --jq .login`), or the user told you to fix it anyway. Otherwise you change nothing on it: in the Loop, report each bug instead of fixing it and end the Loop after the first round that finds one; push no commit, host no screenshot on `qa-evidence`, and leave the PR body alone. Post one PR comment with the verdict, what you tested, the bugs with how to reproduce them, and the screenshots you hosted on Delta (list the rest by path).
+You own the pull request when you are its author or an assignee (per the repo's PR tool, for the PR you were given, e.g. `gh pr view <PR> --json author,assignees` against `gh api user --jq .login`), or the user said in the conversation to change it anyway. A lookup that fails on a tool or login error means not yours. You own it: run the Loop as below.
+
+Otherwise you change nothing on it: in the Loop, report each bug instead of fixing it and end the Loop, as a fail, after the first round that finds one; host no screenshot on `qa-evidence`, and leave the PR body alone. Post one PR comment with the commit you tested, the verdict, what you tested, the bugs with how to reproduce them, and the screenshots you hosted, with no secret or real personal data. Write it to a file and post it with `gh pr comment --body-file`. List unhosted screenshots by path in your report, not the comment.
 
 ## Loop
 
@@ -37,7 +39,7 @@ Each round retests the whole list: a fix can break what passed.
 ## Verdict
 
 - **Pass**: a round found no bug, every item was tested, and the PR's head is still the commit you tested (`git fetch`; moved, run another round if you have one left).
-- **Fail**: round 3 still found a bug or ended on a commit that is no longer the head, or an item still couldn't be tested after you tried every way around it. Say which, what you tried, and what it takes.
+- **Fail**: the last round still found a bug or ended on a commit that is no longer the head, or an item still couldn't be tested after you tried every way around it. Say which, what you tried, and what it takes.
 
 Something in the way (the app won't start, no automation tool, an account or data you can't create)? It's not a fail yet: read the error and fix the setup, try another way to run the app, another tool, or another way to create what's missing. The goal is a pass, so give up only once nothing is left to try.
 
@@ -54,4 +56,4 @@ On a pass:
    A screenshot you can't host (any other host, a failed upload or push, a response with no `url`) stays out of the PR body: list its path in your report instead.
 4. Fetch the current PR body. Delete the `## QA` section an earlier run added: the `---` directly above it, if any, its heading, its commit line, bullets and screenshots. Keep everything else, including screenshots others added. Then end the body with a blank line, `---` and a `## QA` section: the commit you tested, what you tested in a few bullets, then each hosted screenshot as `![<caption>](<url>)`.
 
-Stop the processes you started. End with the verdict, what you tested, the bugs you fixed with their commits, and what's left.
+Stop the processes you started. End with the verdict, what you tested, the bugs you fixed with their commits (or reported), and what's left.

@@ -21,9 +21,9 @@ Every rule runs on every diff, except `design-system`, which needs UI code, and 
 
 ## Ownership
 
-You own the pull request when you are its author or an assignee (`gh pr view --json author,assignees` against `gh api user --jq .login`), or the user told you to fix it anyway. No pull request, or you own it: fix as below.
+You own the pull request when you are its author or an assignee (per the repo's PR tool, e.g. `gh pr view --json author,assignees` against `gh api user --jq .login`), or the user said in the conversation to change it anyway. A lookup that fails on a tool or login error means not yours. No pull request, or you own it: fix as below.
 
-Otherwise review only: run steps 1 to 5, skip 6 and 7, run once, commit nothing, and post the verified findings as one PR comment (the Report, with each finding's file, line and suggested fix) instead of changing the code.
+Otherwise review only: run Scope, Intent, Review, Verify and Group once, commit nothing (not even Scope's commit), skip Decide and Fix, and post one PR comment: the commit you reviewed, then one table row per finding left after Group, most severe first, with its severity, tldr, rule, file, line and suggested fix. Write it to a file and post it with `gh pr comment --body-file`.
 
 ## Cycle
 
