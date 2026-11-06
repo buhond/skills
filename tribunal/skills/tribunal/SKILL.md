@@ -21,9 +21,9 @@ Every rule runs on every diff, except `design-system`, which needs UI code, and 
 
 ## Ownership
 
-You own the pull request when you are its author or an assignee (per the repo's PR tool, e.g. `gh pr view --json author,assignees` against `gh api user --jq .login`), or the user said in the conversation to change it anyway. A lookup that fails on a tool or login error means not yours. No pull request, or you own it: fix as below.
+You own the pull request when you are its author or an assignee (per the repo's PR tool, e.g. `gh pr view --json author,assignees` against `gh api user --jq .login`), or the user said in the conversation to change it anyway. The lookup finds no pull request, or it fails and the branch has no upstream, or you own it: fix as below. Any other failed lookup means not yours; say so in your report.
 
-Otherwise review only: run Scope, Intent, Review, Verify and Group once, commit nothing (not even Scope's commit), skip Decide and Fix, and post one PR comment: the commit you reviewed, then one table row per finding left after Group, most severe first, with its severity, tldr, rule, file, line and suggested fix. Write it to a file and post it with `gh pr comment --body-file`.
+Otherwise review only: run Scope, Intent, Review, Verify and Group once, commit nothing (not even Scope's commit), skip Decide and Fix, and post one PR comment: the commit you reviewed, then one table row per finding left after Group, most severe first, with its severity, tldr, rule, file, line and suggested fix, then any unreviewed rules and unverified findings, with no secret or real personal data. Write it to a file outside the checkout and post it with the repo's PR tool (e.g. `gh pr comment --body-file`). Can't post it? Put the comment in your report instead.
 
 ## Cycle
 

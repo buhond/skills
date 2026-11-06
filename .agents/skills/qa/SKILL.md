@@ -21,9 +21,9 @@ Nothing a user runs changed (only docs, tests or CI)? Say so and pass, with no s
 
 ## Ownership
 
-You own the pull request when you are its author or an assignee (per the repo's PR tool, for the PR you were given, e.g. `gh pr view <PR> --json author,assignees` against `gh api user --jq .login`), or the user said in the conversation to change it anyway. A lookup that fails on a tool or login error means not yours. You own it: run the Loop as below.
+You own the pull request when you are its author or an assignee (per the repo's PR tool, e.g. `gh pr view <PR> --json author,assignees` against `gh api user --jq .login`), or the user said in the conversation to change it anyway. A lookup that fails means not yours; say so in your report. You own it: run the Loop as below.
 
-Otherwise you change nothing on it: in the Loop, report each bug instead of fixing it and end the Loop, as a fail, after the first round that finds one; host no screenshot on `qa-evidence`, and leave the PR body alone. Post one PR comment with the commit you tested, the verdict, what you tested, the bugs with how to reproduce them, and the screenshots you hosted, with no secret or real personal data. Write it to a file and post it with `gh pr comment --body-file`. List unhosted screenshots by path in your report, not the comment.
+Otherwise you change nothing on it: in the Loop, report each bug instead of fixing it and end the Loop after the first round that finds one; host no screenshot on `qa-evidence`, and leave the PR body alone. Post one PR comment with the commit you tested, the verdict, what you tested, the bugs with how to reproduce them, and the screenshots you hosted, with no secret or real personal data. Write it to a file outside the checkout and post it to that PR with the repo's PR tool (e.g. `gh pr comment <PR> --body-file`). Can't post it? Put the comment in your report instead. List unhosted screenshots by path in your report.
 
 ## Loop
 
@@ -56,4 +56,4 @@ On a pass:
    A screenshot you can't host (any other host, a failed upload or push, a response with no `url`) stays out of the PR body: list its path in your report instead.
 4. Fetch the current PR body. Delete the `## QA` section an earlier run added: the `---` directly above it, if any, its heading, its commit line, bullets and screenshots. Keep everything else, including screenshots others added. Then end the body with a blank line, `---` and a `## QA` section: the commit you tested, what you tested in a few bullets, then each hosted screenshot as `![<caption>](<url>)`.
 
-Stop the processes you started. End with the verdict, what you tested, the bugs you fixed with their commits (or reported), and what's left.
+Stop the processes you started. End with the verdict, what you tested, the bugs you fixed with their commits, the bugs you reported, and what's left.
