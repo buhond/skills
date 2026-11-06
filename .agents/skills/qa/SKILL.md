@@ -23,7 +23,7 @@ Nothing a user runs changed (only docs, tests or CI)? Say so and pass, with no s
 
 You own the pull request when you are its author or an assignee (per the repo's PR tool, e.g. `gh pr view <PR> --json author,assignees` against `gh api user --jq .login`), or the user said in the conversation to change it anyway. A lookup that fails means not yours; say so in your report.
 
-Not yours? You change nothing on it: in the Loop, report each bug instead of fixing it and end the Loop after the first round that finds one; host no screenshot on `qa-evidence`, and leave the PR body alone. Post one PR comment with the commit you tested, the verdict, what you tested, the bugs with how to reproduce them, and the screenshots you hosted, with no secret or real personal data. A security hole the base branch has too stays out of it; put it only in your report. Write it to a file outside the checkout and post it to that PR with the repo's PR tool (e.g. `gh pr comment <PR> --body-file`). Can't post it? Put the comment in your report instead.
+Not yours? You change nothing on it: in the Loop, report each bug instead of fixing it and end the Loop after the first round that finds one; host no screenshot on `qa-evidence`, and leave the PR body alone. Post one PR comment with the commit you tested, the verdict, what you tested, the bugs with how to reproduce them, and the screenshots you hosted, with no secret or real personal data. A security hole the base branch has too stays out of the comment; put it only in your report. Write the comment to a file outside the checkout and post it to that PR with the repo's PR tool (e.g. `gh pr comment <PR> --body-file`). Can't post it? Put the comment in your report instead.
 
 ## Loop
 
