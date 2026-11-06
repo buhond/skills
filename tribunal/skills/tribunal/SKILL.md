@@ -19,6 +19,12 @@ Every rule runs on every diff, except `design-system`, which needs UI code, and 
 - **Verify majors:** kiss, no-slop, dry, single-responsibility, performance.
 - **No subagent tool?** Run reviewers and verifiers with anything else that starts separate sessions, such as a dynamic workflow; if those sessions can't see your checkout, put the diff in each prompt. Make every fix yourself. If nothing like that exists, do each subagent's job yourself, one at a time, each from its own prompt in `references/prompts.md`.
 
+## Ownership
+
+You own the pull request when you are its author or an assignee (`gh pr view --json author,assignees` against `gh api user --jq .login`), or the user told you to fix it anyway. No pull request, or you own it: fix as below.
+
+Otherwise review only: run steps 1 to 5, skip 6 and 7, run once, commit nothing, and post the verified findings as one PR comment (the Report, with each finding's file, line and suggested fix) instead of changing the code.
+
 ## Cycle
 
 1. **Scope.** Commit pending changes: reviewers read `git diff <base>...HEAD` and can't see uncommitted work. `<base>` is the pull request's base branch from the repo's PR tool (e.g. `gh pr view --json baseRefName`, as `origin/<name>`), else the remote's default branch. Fetch it first.

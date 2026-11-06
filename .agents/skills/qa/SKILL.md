@@ -19,6 +19,10 @@ Read the PR's description, its linked issue and its diff. List what to test:
 
 Nothing a user runs changed (only docs, tests or CI)? Say so and pass, with no screenshots.
 
+## Ownership
+
+You own the pull request when you are its author or an assignee (`gh pr view --json author,assignees` against `gh api user --jq .login`), or the user told you to fix it anyway. Otherwise you change nothing on it: in the Loop, report each bug instead of fixing it and end the Loop after the first round that finds one; push no commit, host no screenshot on `qa-evidence`, and leave the PR body alone. Post one PR comment with the verdict, what you tested, the bugs with how to reproduce them, and the screenshots you hosted on Delta (list the rest by path).
+
 ## Loop
 
 Repeat until a round finds no bug, at most 3 rounds:
