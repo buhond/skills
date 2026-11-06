@@ -14,7 +14,7 @@ Cursor: add `buhond/skills` as a plugin marketplace and install `tribunal`.
 
 ## Use
 
-`/tribunal:tribunal` on a branch, or `/tribunal:tribunal 5` to allow five cycles instead of three. It commits its fixes and never pushes.
+`/tribunal:tribunal` on a branch, or `/tribunal:tribunal 5` to allow five cycles instead of three. It commits its fixes and never pushes. It changes a PR only when you're its author or an assignee, or you tell it to; on any other PR it reviews once, commits nothing and posts its findings as one PR comment.
 
 Every other skill in [`skills/`](skills) is a rule, and applies while writing code too, e.g. `/tribunal:kiss`.
 
