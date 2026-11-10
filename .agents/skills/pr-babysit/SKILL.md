@@ -10,7 +10,7 @@ Once a PR is open, own it until it merges or closes.
 
 ## Tooling
 
-Use the PR tool the repo's docs or skills name (e.g. Delta at Shopify, Graphite `gt`); read its `--help` instead of guessing. Otherwise use MCP or tool gateway tools, then the host's CLI (`gh`). If the tool handles push, sync, or merge, go through it.
+Use the PR tool the repo's docs or skills name (e.g. Delta at Shopify, Graphite `gt`); read its `--help` instead of guessing. Otherwise use MCP or tool gateway tools, then the host's CLI (`gh`). If the tool handles push, sync, or merge, go through it, within step 2 and the guardrails.
 
 ## Options
 
@@ -26,17 +26,20 @@ Find the PR once and check it now. Then, if the harness can deliver the PR's eve
 ## Each check
 
 1. **Sync**: work in a separate worktree on the PR's head branch, updated from the remote. Never touch the user's checkout.
-2. **Conflicts, or a branch the host won't merge until it is up to date with base**: merge the base branch into the PR's own branch, keep the intent of both sides, run the affected tests, push. If `package.json` `version` conflicts, take base's version and re-apply the PR's bump on top.
-3. **CI**: read the failing logs, fix the root cause, push. A flaky or infra failure unrelated to the PR's change: re-trigger CI (rerun the job, or the repo's CI command), up to 3 times; still failing, treat it as a real failure. Never skip or loosen a check.
+2. **Conflicts, or behind base when the host requires an up-to-date branch**: merge the base branch into the PR's head branch, keep the intent of both sides, run the affected tests, push. If base changed `package.json` `version` since the PR branched, take base's version and re-apply the PR's bump on top.
+3. **CI**: read the failing logs, fix the root cause, push. A flaky or infra failure unrelated to the PR's change: re-trigger CI (rerun the job, or the repo's CI command), up to 3 times; still failing, fix it if its cause is in the PR's scope, else report it as a blocker, saying what you tried. Never skip or loosen a check.
 4. **Review comments** (inline, review bodies, top-level, bots) whose latest reply isn't yours:
    - Makes sense: fix it, push, reply with the commit SHA, then resolve the thread.
    - Doesn't: reply with a short, polite reason. Resolve the thread when the reviewer is a bot; leave it for a person.
    - Unsure: follow the `decide` skill, act on your recommendation, and say what you chose in the reply. Ask the user only when the choice is genuinely theirs: once, in one line with your recommendation, and skip it until they answer.
 
    Once you've addressed a review, re-request it from that reviewer.
-5. **Ready**: not a draft, approved, green, no conflicts, every thread answered: merge with `merge`; without it, tell the user once it is ready to merge and keep checking. A missing human review: tell the user once whom to ask (pick them as the `request-reviewers` skill does) and keep checking. Anything else missing is steps 2–4. Still a draft once its work is done (CI passed, no conflicts, every thread answered, nothing else still pushing to the branch, such as a tribunal run): mark it ready with `ready`; otherwise ask the user whether to.
+5. **Ready**:
+   - Still a draft once its work is done (CI passed, no conflicts, every thread answered, nothing else still pushing to the branch, such as a tribunal run): mark it ready with `ready`; otherwise ask the user whether to.
+   - Not a draft, missing a human review: tell the user once whom to ask (the reviewers already on the PR, else pick them as the `request-reviewers` skill does) and keep checking.
+   - Approved, green, no conflicts, every thread answered: merge with `merge`, never with `--admin` or another bypass of the host's rules; without `merge`, tell the user once that it's ready to merge, and keep checking.
 
 ## Guardrails
 
-- Push only to the PR's branch, only changes in its scope. Never with plain `--force`; if a force is unavoidable, `--force-with-lease=<branch>:<head SHA you synced from>`. Never `dt submit --stack`, never push a parent branch.
-- A fix that still fails three checks later: try a different one. Never report blocked for anything fixable. Report a block only once it's outside your control and you've tried everything, saying what you tried. Waiting on CI or reviewers isn't a blocker.
+- Push only to the PR's branch (so no `dt submit --stack`), only changes in its scope. Never with plain `--force`; if a force is unavoidable, `--force-with-lease=<branch>:<head SHA you synced from>`.
+- A fix that still fails three checks later: try a different one. Report a blocker only once it's outside your control and you've tried everything, saying what you tried. Waiting on CI or reviewers isn't a blocker.
