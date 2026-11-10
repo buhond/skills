@@ -26,17 +26,17 @@ Find the PR once and check it now. Then, if the harness can deliver the PR's eve
 ## Each check
 
 1. **Sync**: work in a separate worktree on the PR's head branch, updated from the remote. Never touch the user's checkout.
-2. **Conflicts, or a branch behind base**: merge the base branch into the PR's own branch the way the repo does, keep the intent of both sides, run the affected tests, push. If `package.json` `version` conflicts, keep the PR's version.
-3. **CI**: read the failing logs, fix the root cause, push. A flaky or infra failure: re-trigger CI (rerun the job, or the repo's CI command), up to 3 times. Never skip or loosen a check.
+2. **Conflicts, or a branch the host won't merge until it is up to date with base**: merge the base branch into the PR's own branch, keep the intent of both sides, run the affected tests, push. If `package.json` `version` conflicts, take base's version and re-apply the PR's bump on top.
+3. **CI**: read the failing logs, fix the root cause, push. A flaky or infra failure unrelated to the PR's change: re-trigger CI (rerun the job, or the repo's CI command), up to 3 times; still failing, treat it as a real failure. Never skip or loosen a check.
 4. **Review comments** (inline, review bodies, top-level, bots) whose latest reply isn't yours:
    - Makes sense: fix it, push, reply with the commit SHA, then resolve the thread.
    - Doesn't: reply with a short, polite reason. Resolve the thread when the reviewer is a bot; leave it for a person.
    - Unsure: follow the `decide` skill, act on your recommendation, and say what you chose in the reply. Ask the user only when the choice is genuinely theirs: once, in one line with your recommendation, and skip it until they answer.
 
    Once you've addressed a review, re-request it from that reviewer.
-5. **Ready** (approved, green, no conflicts, every thread answered): merge with `merge`. Anything else missing is yours to fix (steps 2–4), not to report. The one exception: a missing human review — tell the user once whom to ask (owners or recent reviewers of the touched code, e.g. `git log`, CODEOWNERS) and keep checking. Still a draft once its work is done (CI passed, no conflicts, every thread answered, nothing else still pushing to the branch, such as a tribunal run): mark it ready with `ready`; otherwise ask the user whether to.
+5. **Ready**: not a draft, approved, green, no conflicts, every thread answered: merge with `merge`; without it, tell the user once it is ready to merge and keep checking. A missing human review: tell the user once whom to ask (pick them as the `request-reviewers` skill does) and keep checking. Anything else missing is steps 2–4. Still a draft once its work is done (CI passed, no conflicts, every thread answered, nothing else still pushing to the branch, such as a tribunal run): mark it ready with `ready`; otherwise ask the user whether to.
 
 ## Guardrails
 
-- Push only to the PR's branch, only changes in its scope. Never with plain `--force`; if a force is unavoidable, `--force-with-lease=<branch>:<sha>`. Never `dt submit --stack`, never push a parent branch (merging the base branch in needs no force).
-- A fix that still fails three checks later: try a different one. Never report blocked for anything fixable. A truly external block you may report only after trying everything, saying what you tried. Waiting on CI or reviewers isn't a blocker.
+- Push only to the PR's branch, only changes in its scope. Never with plain `--force`; if a force is unavoidable, `--force-with-lease=<branch>:<head SHA you synced from>`. Never `dt submit --stack`, never push a parent branch.
+- A fix that still fails three checks later: try a different one. Never report blocked for anything fixable. Report a block only once it's outside your control and you've tried everything, saying what you tried. Waiting on CI or reviewers isn't a blocker.
