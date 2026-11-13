@@ -1,4 +1,4 @@
 interface:
   display_name: "Skill Auto Update"
-  short_description: "Turn feedback into durable skill updates"
-  default_prompt: "Use $skill-auto-update on every turn to distill reusable lessons from feedback, update the right skill, replace examples with rules when possible, avoid duplicates, and strengthen repeated rules."
+  short_description: "Turn failures and feedback into one durable rule"
+  default_prompt: "Use $skill-auto-update on "retro" or after a failure, miss or correction: write one general rule, save it in the narrowest skill, prompt or bot memory, and tell the user it in one line."

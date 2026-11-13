@@ -1,33 +1,35 @@
 ---
 name: skill-auto-update
-description: Distill durable feedback into the narrowest existing skill. Use when the user corrects a convention, repeats guidance, or a review comment reveals a reusable rule that should outlive this session. Not a routine every-turn check.
+description: Turn failures, misses and feedback into one durable rule. Use on the word "retro", or when something didn't work or wasn't caught (user correction, missed review comment, wrong claim, failed merge), or the user repeats guidance. Not a routine every-turn check.
 ---
 
 # Skill Auto Update
 
-Use this skill to keep project skills aligned with what feedback keeps teaching.
+Keep skills and memory aligned with what failures and feedback teach.
 
 ## Activation
 
-Run this when a turn contains durable feedback: a correction, a repeated instruction, or a review comment that implies a reusable rule. Do not run it as a routine check on every turn.
+Run on "retro", or when a turn contains a failure or miss: a correction, a repeated instruction, a missed comment, a wrong claim, a failed action. Not on every turn.
 
-Treat it as a silent background pass. Do not announce that you are using this skill unless it produces a user-relevant skill edit or the user explicitly asks about it.
+## Loop
 
-## Run this loop
+1. Find the miss. Ignore one-off facts and task-local preferences.
+2. Write ONE general rule: imperative, one short sentence, no anecdote.
+3. Save it in the narrowest durable place that owns it:
+   - the relevant skill (tighten an existing rule before adding one);
+   - the tool's own prompt or skill (e.g. Supr);
+   - the bot's memory via `bot_update_state`, when no skill owns it.
+4. Create a new skill only when none can hold the rule cleanly. If a new rule subsumes older text, delete the older text.
+5. Repeat miss: raise ` [score: N]` on the rule (starts at 2, max 5) instead of adding another.
+6. Tell the user the rule in one line.
+7. No durable lesson: make no edit and say nothing.
 
-1. Scan the current turn for durable feedback signals such as user corrections, review comments, comments on issues or pull requests, repeated instructions, and explicit "do this / avoid this" guidance.
-2. Ignore one-off facts, task-local preferences, and literal examples that do not imply a reusable rule.
-3. Rewrite the signal as a principle: capture the idea, not the anecdote; state the invariant in one short sentence; prefer imperative wording such as `Prefer`, `Keep`, `Move`, or `Avoid`.
-4. Translate taste or persona goals into concrete engineering rules; prefer `Keep functions small and cohesive` over `code like Uncle Bob`.
-5. Update the narrowest existing skill that owns the rule: search for the same idea first, tighten an existing rule when it already exists, and create a new skill only when no current skill can contain the lesson cleanly.
-6. When a new rule subsumes examples or sibling rules, delete or compress the older text instead of keeping both.
-7. If the same rule is missed again, increase its score instead of adding another bullet.
-8. If no durable lesson exists, make no skill edit and do not mention the check.
+## Examples
 
-## Editing standard
+- Review body with no inline thread was missed -> `A review body with no inline thread is a comment too.`
+- Defended a design choice unchecked -> `Check the reference product before defending a design choice.`
+- Reported a PR merged unchecked -> `Verify state (gh/dt) before reporting it.`
 
-- Keep skill text concise and imperative.
-- Prefer strengthening an existing rule over adding a sibling rule that says the same thing differently.
-- Prefer general rules over examples; if an example is necessary, keep one generic example only.
-- When a rule, example, and score guidance overlap, keep the rule and only the minimum scoring detail needed: use no score for a fresh rule, start at ` [score: 2]` for the second clear miss, increment to a maximum of `5`, and never raise score for a mere style preference.
-- Avoid historical commentary, changelogs, and case-specific prose.
+## Style
+
+Concise, imperative, general. No history or changelogs.
