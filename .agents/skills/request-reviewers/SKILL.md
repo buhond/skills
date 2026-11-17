@@ -16,6 +16,8 @@ Request one or two reviewers who own the code the PR touches, then ask their tea
 6. Search that channel for the PR's URL. Already posted? Stop.
 7. Post exactly this line with the Slack tool the session has (MCP or tool gateway). Never add a summary of the PR:
 
-   > :robot_face: Hey, could someone review this <{PR URL}|PR> please? :pray:
+   > :robot_face: Hey, could someone review <{PR URL}|{PR title}> please? :pray:
+
+   Escape the title for Slack: `&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;`, drop `|`.
 
    No Slack tool? Give the user the line and the channel instead.
