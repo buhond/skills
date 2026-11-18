@@ -27,7 +27,7 @@ Not yours? You change nothing on it: in the Loop, report each bug instead of fix
 
 ## Before
 
-Once, before round 1, in a separate worktree of the PR's merge base with the default branch (never the PR's checkout), run the app on that code and screenshot each state the PR adds or alters, at the size its users see, into a folder outside the checkout. A change with no UI: run its commands and keep the output. Stop that app before round 1.
+Once, before round 1, in a separate worktree of the PR's merge base with its target branch (never the PR's checkout), run the app on that code and screenshot each state the PR adds or alters, at the size its users see, into a folder outside the checkout. A change with no UI: run its commands and keep the output. Stop that app before round 1.
 
 ## Loop
 
@@ -52,12 +52,13 @@ Something in the way (the app won't start, no automation tool, an account or dat
 On a pass:
 
 1. Pair each state the change adds or alters, and each step of an interaction, in order: its before screenshot and its screenshot from the passing round, same view, size and data. A state the base branch lacks gets its before as the nearest screen, or a caption saying it is new. A change with no UI gets its commands and their output before and after instead.
+   Drop a pair whose before and after are identical (same bytes, or ImageMagick `compare -metric AE` reports 0): the change shows nowhere there.
 2. Check each shows what its caption says, with no error, secret or real personal data. Retake any that don't.
 3. Host them where the repo's docs say. Otherwise, by the host of the `origin` remote, which also gives `<owner>` and `<repo>`:
    - **Delta**, if `dt auth status` reports you logged in to that host: upload each with `curl -fsS -X POST -H "Authorization: Bearer $(dt auth token)" -H "Content-Type: image/png" --data-binary @<path> "https://<origin host>/<owner>/<repo>/api/assets?name=<PR number>-<short SHA tested>-<slug>.png"`, where `<slug>` is letters, digits and dashes, and link the `url` it returns. Send the token only to that host.
    - **GitHub**, if it is `github.com`: commit them under `<PR number>/` on the orphan branch `qa-evidence`, from a separate worktree (never the PR's checkout), with `[skip ci]` in the message, and push (rejected, rebase and push again). Link each as `https://github.com/<owner>/<repo>/raw/<SHA of that commit>/<PR number>/<file>.png`, so a later run can't change it.
 
    A screenshot you can't host (any other host, a failed upload or push, a response with no `url`) stays out of the PR body: list its path in your report instead.
-4. Fetch the current PR body. Delete the `## QA` section an earlier run added: the `---` directly above it, if any, its heading, its commit line, bullets and screenshots. Keep everything else, including screenshots others added. Then end the body with a blank line, `---` and a `## QA` section: the commit you tested, what you tested in a few bullets, then a Before and After table with one row per pair, each hosted screenshot as `![<caption>](<url>)`.
+4. Fetch the current PR body. Delete the `## QA` section an earlier run added: the `---` directly above it, if any, its heading, its commit line, bullets and screenshots. Keep everything else, including screenshots others added. Then end the body with a blank line, `---` and a `## QA` section: the commit you tested, what you tested in a few bullets, then a Before and After table with one row per pair, each hosted screenshot as `![<caption>](<url>)`. Every pair dropped as identical? One bullet saying so instead of the table.
 
 Stop the processes you started. End with the verdict, what you tested, the bugs you fixed with their commits, the bugs you reported, and what's left.
