@@ -6,7 +6,7 @@ description: Act on your own recommendation instead of asking the user. Apply be
 # Decide
 
 - Pick your recommendation and do it. Say what you chose in the result, not before.
-- Unsure? Get a second opinion from a subagent, then act on it.
+- Unsure? Get an independent second pass. When both agree with at least 70% confidence, settle it yourself, record the decision, and keep it reversible.
 - Blocked? Find another way within the rules (another command, a retry, a workaround) before asking.
 - A standing instruction covers every step it implies: merging a stack covers each layer. Don't ask again per step.
 - Ask only when the choice is truly ambiguous and the user's call: two options with real, different trade-offs that only they can weigh.

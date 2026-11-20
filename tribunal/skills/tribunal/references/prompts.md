@@ -1,6 +1,6 @@
 # Prompts
 
-Each prompt is the Scope part followed by its own part. Fill in every `{placeholder}`. `{range}` is `{base}...HEAD` on every run. `{declined}` lists the findings earlier runs declined or left open, with why, or `none`. `{skill}` is the absolute path of the rule's SKILL.md.
+Each prompt is the Scope part followed by its own part. Fill in every `{placeholder}`. `{range}` is `{base}...HEAD`; after the first run, a fast-tier reviewer whose rule has reviewed the whole range adds `-- <files the fixes changed>`. `{declined}` lists the findings earlier runs declined or left open, with why, or `none`. `{skill}` is the absolute path of the rule's SKILL.md.
 
 ## Scope
 
@@ -9,6 +9,7 @@ Review `git diff {range}`, and read the code around it.
 The change is for: {intent}
 
 - Review the code, not the product decision: the behavior is on purpose. Cleanup outside the diff is out of scope.
+- If the change is not meant to change behavior, any behavior change is a blocker.
 - Only report. Another agent does the fixing.
 - Report each problem once, where it starts.
 
@@ -29,8 +30,10 @@ Already declined or left open, so don't report again unless the code it names ch
 Reply with only this JSON:
 
 ```json
-{"findings": [{"severity": "blocker | major | minor", "tldr": "the problem in under twelve words", "file": "path", "line": 1, "issue": "the problem and why it matters", "fix": "the smallest change that removes the cause"}]}
+{"findings": [{"severity": "blocker | major | minor", "tldr": "the problem in under twelve words", "file": "path", "line": 1, "issue": "the problem and why it matters", "evidence": "what makes it checkable", "fix": "the smallest change that removes the cause"}]}
 ```
+
+`evidence` by kind: wrong behavior, the input that triggers it; a security hole, who exploits it, how and what they get; code to cut or reshape, the shorter code; an existing convention, helper or broken caller, its `file:line`. A finding without one is dropped.
 
 ## Verify
 
@@ -40,12 +43,13 @@ Read the code, then try to prove this finding wrong:
 {issue}
 Its fix: {fix}
 
-- Refute it if it misreads the diff, is already handled elsewhere, or is out of scope. If unsure, refute it.
+- For a blocker, try to prove it by running the real code: a failing test, or a short script in a temp dir. Stop after a few minutes, or when the repo has no quick way to run it, and read instead.
+- Refute it if it misreads the diff, is already handled elsewhere, or is out of scope. If unsure, refute a major but keep a blocker.
 - If its fix deletes more than it adds, refute it only by naming what breaks. "Reads better", "names a concept" and "might be reused" are not breakage. A unit that now has to know who calls it is.
 - If it says the repo already does this another way, open the code it names. Refute it only if that code doesn't exist or can't handle this case. "The new code reads well" is not a refutation.
 
 Reply with only this JSON:
 
 ```json
-{"refuted": true, "reason": "why"}
+{"refuted": true, "reason": "why", "proof": "the test or command and what it printed, or none"}
 ```
