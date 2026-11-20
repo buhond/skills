@@ -14,6 +14,7 @@ Read the PR's description, its linked issue and its diff. List what to test:
 
 - Every flow the PR adds or changes, end to end, as its user does it.
 - Its edge cases: empty, invalid, long or many inputs, a failing request, a user without permission, and each state it shows (loading, empty, error).
+- A copy of real data (never production itself), with the result compared against live.
 - Data and settings saved before the change, if it reads them, and its feature flag on and off, if it has one.
 - The flows next to it that share its code, for regressions.
 
@@ -27,7 +28,7 @@ Not yours? You change nothing on it: in the Loop, report each bug instead of fix
 
 ## Before
 
-Once, before round 1, in a separate worktree of the PR's merge base with its target branch (never the PR's checkout), run the app on that code and screenshot each state the PR adds or alters, at the size its users see, into a folder outside the checkout. A change with no UI: run its commands and keep the output. Stop that app before round 1.
+Once, before round 1, in a separate worktree of the PR's merge base with its target branch (the PR's base branch, from the PR tool; never the PR's checkout), run the app on that code and screenshot each state the PR adds or alters, at the size its users see, into a folder outside the checkout. A change with no UI: run its commands and keep the output. Stop that app before round 1.
 
 ## Loop
 
