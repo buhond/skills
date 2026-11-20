@@ -11,7 +11,7 @@ A comment needs a reason the code can't give. Keep only:
 
 - license headers;
 - a reason the code can't show, like a bug in a dependency, a platform quirk or a constraint from outside the repo;
-- doc comments on a public API: what other packages import, like a published library's exports. An app, plugin or service has almost none, and an `export` used only inside its own package is not public;
+- doc comments on a public API: what other packages import, like a published library's exports. An app, plugin or service has almost none, and an `export` used only inside its own package is not public. A proto, schema or generated gem inside the same monorepo is not public either: its field docs go;
 - links to an issue or a spec.
 
 Delete everything else, doc comments included: comments that repeat the code or its name, docstrings on internal functions, types and fields, section banners, commented-out code, notes defending a workaround (fix the workaround instead). Not sure? Delete it. Deleting one is never a matter of taste.

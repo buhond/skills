@@ -13,3 +13,4 @@ UI is built from the repo's theme and shared components. Find them first: the th
 - **Flag custom components that redo a library or shared one.** Name the one to use.
 - **Button and link labels name the action and its object** ("Run review now", not "Start anyway"); a state the UI shows always says why.
 - **Flag inaccessible UI:** images without alt text, inputs without labels, clickable things that aren't buttons or links, no keyboard or focus support.
+- **A UI change or revert covers every surface that renders that component** (single, stacked, sidebar, header), never just the first one found.
