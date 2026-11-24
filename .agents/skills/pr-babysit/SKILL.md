@@ -46,5 +46,4 @@ Find the PR once and check it now. Then, if the harness can deliver the PR's eve
 - Read live state before reporting a status (merged, green, resolved).
 - Push only to the PR's branch (so no `dt submit --stack`), only changes in its scope, with plain `git push`. Never force-push.
 - Others (e.g. another agent) may push to the branch too: integrate their pushes with `git pull --no-rebase` (or rebase only your own unpushed commits), then push. Never overwrite or drop their commits.
-- Before replacing the remote head with an older commit, fetch and check whether its base moved: a new head on a moved base is a rebase, not damage.
 - A fix that still fails three checks later: try a different one. Report a blocker once, only when it's outside your control and you've tried everything, saying what you tried, then keep checking. Never approve, label or comment your way past a gate that waits on a person (a fork's workflow run, `/ok-to-test`, a deployment approval): treat it like a missing human review. Waiting on CI or reviewers isn't a blocker.
