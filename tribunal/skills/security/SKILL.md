@@ -13,7 +13,7 @@ Flag:
 - **Missing access checks:** every endpoint and action checks that this user may touch this record, not only that someone is logged in.
 - **Mass assignment:** request fields copied straight onto a model.
 - **Server requests to URLs the user controls** (SSRF).
-- **Secrets** in code, logs, error messages, URLs or the client bundle.
+- **Secrets** in code, logs, error messages, URLs, chat or the client bundle. Even an encrypted one never passes through chat: whoever holds it adds it to the secret store.
 - **Sensitive data** returned or logged beyond what the caller needs.
 - **Weak crypto:** home-made crypto, fast hashes for passwords, secrets compared with `==` instead of a constant-time compare, guessable tokens.
 - **Missing CSRF protection** on state-changing requests in cookie-based apps.
