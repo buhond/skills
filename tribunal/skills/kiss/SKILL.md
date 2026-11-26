@@ -29,3 +29,4 @@ Produce the minimum needed for the task — code, documentation, configuration, 
 - Then each line, branch, parameter and layer: if removing it changes nothing, it is a finding.
 - A wrapper with one caller and nothing of its own is such a layer. Inline it.
 - Don't strip generality that keeps a unit unaware of who calls it. Tying it to its one caller saves lines but couples them, and that is worse.
+- Simplify without losing behavior. Cutting a feature (e.g. deferring it to a follow-up) is not a KISS finding.
